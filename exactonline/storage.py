@@ -1,6 +1,6 @@
 # vim: set ts=8 sw=4 sts=4 et ai tw=79:
 """
-Provides a IniStorage to ExactOnlineAPI lib.
+Provides a storage class to this ExactOnline REST API library.
 
 Usage:
 
