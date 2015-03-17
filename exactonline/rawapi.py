@@ -1,8 +1,6 @@
 # vim: set ts=8 sw=4 sts=4 et ai tw=79:
 import json
 
-from os import isatty
-from sys import stdin
 from time import time
 
 from .http import (
@@ -87,14 +85,6 @@ class ExactRawApi(object):
     # https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
     def rest(self, method, resource, data=None):
         url = urljoin(self.storage.get_rest_url().rstrip('/') + '/', resource)
-        token = self.storage.get_access_token().encode('utf-8')
-        opt_custom = Options()
-        opt_custom.headers = {
-            'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token,
-        }
-        if method in ('POST', 'PUT'):
-            opt_custom.headers.update({'Content-Type': 'application/json'})
 
         # Convert data to json.
         if data is None:
@@ -104,22 +94,7 @@ class ExactRawApi(object):
         else:
             data = json.dumps(data)
 
-        if isatty(stdin.fileno()):
-            print 'DEBUG:', method, resource
-
-        if method == 'DELETE':
-            assert data is None
-            response = http_delete(url, opt=(opt_secure | opt_custom))
-        elif method == 'GET':
-            assert data is None
-            response = http_get(url, opt=(opt_secure | opt_custom))
-        elif method == 'POST':
-            response = http_post(url, data, opt=(opt_secure | opt_custom))
-        elif method == 'PUT':
-            response = http_put(url, data, opt=(opt_secure | opt_custom))
-        else:
-            raise NotImplementedError('No REST handler for method %s' %
-                                      (method,))
+        response = self._rest_query(method, url, data)
 
         if method in ('DELETE', 'PUT'):
             if response != '':
@@ -136,6 +111,31 @@ class ExactRawApi(object):
                                  (method, resource, response))
 
         return decoded
+
+    def _rest_query(self, method, url, data):
+        token = self.storage.get_access_token().encode('utf-8')
+        opt_custom = Options()
+        opt_custom.headers = {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token,
+        }
+        if method in ('POST', 'PUT'):
+            opt_custom.headers.update({'Content-Type': 'application/json'})
+
+        if method == 'DELETE':
+            assert data is None
+            response = http_delete(url, opt=(opt_secure | opt_custom))
+        elif method == 'GET':
+            assert data is None
+            response = http_get(url, opt=(opt_secure | opt_custom))
+        elif method == 'POST':
+            response = http_post(url, data, opt=(opt_secure | opt_custom))
+        elif method == 'PUT':
+            response = http_put(url, data, opt=(opt_secure | opt_custom))
+        else:
+            raise NotImplementedError('No REST handler for method %s' %
+                                      (method,))
+        return response
 
     def _set_tokens(self, jsondata):
         # The json should look somewhat like this:

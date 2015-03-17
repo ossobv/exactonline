@@ -9,10 +9,10 @@ to ease its use.
 TODO
 ----
 
-  * Add license and credits.
-  * Add basic howto.
-  * Add unittests to http.py.
-  * Clean up http.py, removing half of it.
-  * Test python3 support.
-  * Upload to pypi.
-  * Max-complexity down to 10.
+* Add license and credits.
+* Add basic howto.
+* Add unittests to http.py.
+* Clean up http.py, removing half of it.
+* Test python3 support.
+* Upload to pypi.
+* Take useful stuff from http://www.basvanbeek.nl/exact-online-tips/ .
