@@ -7,10 +7,9 @@ Usage:
     storage = IniStorage('somefile.ini')
 
 Or, if you want to use your own storage backend, you may provide a set()
-and get() method, and inherit both from your storage backend and the
-ExactOnlineConfig.
+and get() method and inherit from the ExactOnlineConfig.
 
-    class MyStorageBackend(object):
+    class MyStorage(ExactOnlineConfig):
         def get(self, section, option):
             try:
                 return self.fetch_stuff_from_somewhere(...)
@@ -19,13 +18,6 @@ ExactOnlineConfig.
 
         def set(self, section, option, value):
             self.store_stuff_somewhere(...)
-
-        def save(self):
-            self.store_stuff_to_disk(...)
-
-    class MyStorage(ExactOnlineConfig, MyStorageBackend):
-        pass
-
 
 Example ini file:
 
@@ -53,6 +45,11 @@ from io import StringIO
 from os import path, unlink
 
 
+# TODO: replace NoOptionError with a custom/own config error?
+# TODO: move the exactonlineconfig base to a separate file one doesn't need to
+# import from the ConfigParser?
+
+
 class ExactOnlineConfig(object):
     def get_or_set_default(self, section, option, value):
         """
@@ -66,32 +63,6 @@ class ExactOnlineConfig(object):
             ret = value
 
         return ret
-
-    def get(self, section, option):
-        """
-        Base get method that raises NoOptionError if the value was
-        unset. This differs from the SafeConfigParser which may also
-        raise a NoSectionError.
-        """
-        try:
-            ret = super(ExactOnlineConfig, self).get(section, option)
-        except NoSectionError:
-            raise NoOptionError(option, section)
-        return ret
-
-    def set(self, section, option, value):
-        """
-        Base set method that (1) auto-saves if possible and (2)
-        auto-creates sections.
-        """
-        try:
-            super(ExactOnlineConfig, self).set(section, option, value)
-        except NoSectionError:
-            self.add_section(section)
-            super(ExactOnlineConfig, self).set(section, option, value)
-
-        # Save automatically!
-        self.save()
 
     # [server]
     # ; These always return something. They may write their default to
@@ -194,6 +165,32 @@ class IniStorage(ExactOnlineConfig, SafeConfigParserNewStyle):
         else:
             self.read(filename_or_fp)
             self.overwrite = filename_or_fp
+
+    def get(self, section, option):
+        """
+        Get method that raises NoOptionError if the value was unset.
+        This differs from the SafeConfigParser which may also raise a
+        NoSectionError.
+        """
+        try:
+            ret = super(ExactOnlineConfig, self).get(section, option)
+        except NoSectionError:
+            raise NoOptionError(option, section)
+        return ret
+
+    def set(self, section, option, value):
+        """
+        Set method that (1) auto-saves if possible and (2) auto-creates
+        sections.
+        """
+        try:
+            super(ExactOnlineConfig, self).set(section, option, value)
+        except NoSectionError:
+            self.add_section(section)
+            super(ExactOnlineConfig, self).set(section, option, value)
+
+        # Save automatically!
+        self.save()
 
     def save(self):
         if self.overwrite:
