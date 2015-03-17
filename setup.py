@@ -13,8 +13,8 @@ except IOError:
 
 setup(
     name='exactonline',
-    version='0.0.1',
-    packages=['exactonline'],
+    version='0.0.2',
+    packages=['exactonline', 'exactonline.api'],
     description='Exact Online REST API library in Python',
     long_description=long_description,
     author='Walter Doekes',
