@@ -136,6 +136,12 @@ class ExactOnlineConfig(object):
     def set_refresh_token(self, value):
         self.set('transient', 'refresh_token', value)
 
+    # ; aliases
+
+    def get_refresh_url(self):
+        "Alias for get_token_url()."
+        return self.get_token_url()
+
 
 class SafeConfigParserNewStyle(SafeConfigParser, object):
     """
@@ -266,6 +272,7 @@ class IniStorageTestCase(TestCase):
                           'https://start.exactonline.co.uk/api')
         self.assertEquals(config.get_token_url(),
                           'https://start.exactonline.co.uk/api/oauth2/token')
+        self.assertEquals(config.get_token_url(), config.get_refresh_url())
 
         # [application]
         self.assertEquals(config.get_base_url(), 'https://example.com')
