@@ -2,6 +2,10 @@
 """
 HTTP shortcuts, taken from osso-djuty.
 
+This file is part of the ExactOnline REST API Library in Python
+(EORALP), licensed under the LGPLv3+.
+Copyright (C) 2015 Walter Doekes, OSSO B.V.
+
 We may want to replace this with something simpler.
 """
 import httplib

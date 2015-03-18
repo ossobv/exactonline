@@ -13,20 +13,21 @@ except IOError:
 
 setup(
     name='exactonline',
-    version='0.0.3',
+    version='0.0.4',
     packages=['exactonline', 'exactonline.api'],
+    data_files=[('', ['LICENSE.txt', 'README.rst'])],
     description='Exact Online REST API library in Python',
     long_description=long_description,
     author='Walter Doekes',
     author_email='wjdoekes@osso.nl',
     url='https://github.com/ossobv/exactonline',
-    license='GPLv3+',
+    license='LGPLv3+',
     platforms=('linux',),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        ('License :: OSI Approved :: GNU General Public License v3 or later '
-         '(GPLv3+)'),
+        ('License :: OSI Approved :: GNU Lesser General Public License v3 '
+         'or later (LGPLv3+)'),
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2.7',
         'Topic :: Office/Business :: Financial',

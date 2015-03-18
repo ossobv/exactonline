@@ -270,12 +270,12 @@ The ExactApi class ensures that:
 TODO
 ----
 
-* Add license and credits.
 * Add unittests to http.py.
 * Clean up http.py, removing half of it.
 * Test python3 support.
 * Upload to pypi.
 * Replace base_url with response_url?
+* Add travis build stuff.
 
 
 

@@ -1,4 +1,11 @@
 # vim: set ts=8 sw=4 sts=4 et ai tw=79:
+"""
+Base manager class for resource helpers.
+
+This file is part of the ExactOnline REST API Library in Python
+(EORALP), licensed under the LGPLv3+.
+Copyright (C) 2015 Walter Doekes, OSSO B.V.
+"""
 from ..exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from ..http import binquote
 

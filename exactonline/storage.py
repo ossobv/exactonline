@@ -2,6 +2,10 @@
 """
 Provides a storage class to this ExactOnline REST API library.
 
+This file is part of the ExactOnline REST API Library in Python
+(EORALP), licensed under the LGPLv3+.
+Copyright (C) 2015 Walter Doekes, OSSO B.V.
+
 Usage:
 
     storage = IniStorage('somefile.ini')

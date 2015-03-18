@@ -1,7 +1,11 @@
 # vim: set ts=8 sw=4 sts=4 et ai tw=79:
 """
-Unwrap looks for __next values, and begins to download those documents
-automatically. It unpaginates the results.
+Looks for __next values, and begins to download those documents
+automatically; it unpaginates resultsets.
+
+This file is part of the ExactOnline REST API Library in Python
+(EORALP), licensed under the LGPLv3+.
+Copyright (C) 2015 Walter Doekes, OSSO B.V.
 """
 
 
