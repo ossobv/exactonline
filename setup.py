@@ -22,7 +22,7 @@ setup(
     author_email='wjdoekes@osso.nl',
     url='https://github.com/ossobv/exactonline',
     license='LGPLv3+',
-    platforms=('linux',),
+    platforms=['linux'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
