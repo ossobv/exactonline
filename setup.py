@@ -13,7 +13,7 @@ except IOError:
 
 setup(
     name='exactonline',
-    version='0.0.4',
+    version='0.1',
     packages=['exactonline', 'exactonline.api'],
     data_files=[('', ['LICENSE.txt', 'README.rst'])],
     description='Exact Online REST API library in Python',
