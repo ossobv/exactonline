@@ -95,29 +95,36 @@ Update a relation:
     daffy_duck = api.relations.get(relation_code='555')
     api.relations.update(daffy_duck['ID'], {'Name': 'Daffy Duck and sons'})
 
+Delete a relation:
+
+.. code-block:: python
+
+    daffy_duck = api.relations.get(relation_code='555')
+    api.relations.delete(daffy_duck['ID'])
+
 Create an invoice:
 
 .. code-block:: python
 
-    customer_data = api.relations.get(relation_code='123')  # my relation_code
+    customer_data = api.relations.get(relation_code='123')  # local relation_code
     customer_guid = customer_data['ID']
     invoice_data = {
         'AmountDC': str(amount_with_vat),  # DC = default currency
         'AmountFC': str(amount_with_vat),  # FC = foreign currency
-        'EntryDate': open_date.strftime('%Y-%m-%dT%H:%M:%SZ'),  # pretend we're in UTC
+        'EntryDate': invoice_date.strftime('%Y-%m-%dT%H:%M:%SZ'),  # pretend we're in UTC
         'Customer': customer_guid,
         'Description': u'Invoice description',
         'Journal': remote_journal,  # 70 "Verkoopboek"
-        'ReportingPeriod': open_date.month,
-        'ReportingYear': open_date.year,
+        'ReportingPeriod': invoice_date.month,
+        'ReportingYear': invoice_date.year,
         'SalesEntryLines': [],
         'VATAmountDC': str(vat_amount),
         'VATAmountFC': str(vat_amount),
-        'YourRef': my_invoice_number,
+        'YourRef': local_invoice_number,
         # must start uniquely at the start of a year, defaults to:
-        # YYJJ0001 where YY=open_date.year, and JJ=remote_journal
-        'InvoiceNumber': '%d%d%04d' % (open_date.year, remote_journal,
-                                       int(my_invoice_number),
+        # YYJJ0001 where YY=invoice_date.year, and JJ=remote_journal
+        'InvoiceNumber': '%d%d%04d' % (invoice_date.year, remote_journal,
+                                       int(local_invoice_number),
     }
     # The SalesEntryLines need to be filled with a bunch of dictionaries
     # with these keys: AmountDC, AmountFC, Description, GLAccount,
@@ -228,7 +235,7 @@ following two three are equivalent:
 
 .. code-block:: python
 
-    api.relations.objects.all()
+    api.relations.all()
     api.restv1('GET', 'crm/Accounts')
     api.rest('GET', 'v1/%d/crm/Accounts' % selected_division)
 
@@ -236,7 +243,7 @@ As are the following three:
 
 .. code-block:: python
 
-    api.relations.objects.filter(top=2)
+    api.relations.filter(top=2)
     api.restv1('GET', 'crm/Accounts?$top=2')
     api.rest('GET', 'v1/%d/crm/Accounts?$top=2' % selected_division)
 
