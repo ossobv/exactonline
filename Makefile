@@ -1,5 +1,6 @@
 .PHONY: cleanup compile default install isclean pep test vimmodelines
 
+PYTHON = python  # or python3?
 WHERE = exactonline
 PYFILES = $(wildcard $(WHERE)/*.py)
 DATAFILES = LICENSE.txt README.rst
@@ -10,14 +11,14 @@ dist: isclean $(PYFILES) $(DATAFILES)
 	# sdist likes a reStructuredText README.txt
 	cp -n README.rst README.txt
 	# do the sdist
-	python setup.py sdist
+	$(PYTHON) setup.py sdist
 	##python setup.py register # only needed once
 	#python setup.py sdist upload
 	# clean up
 	$(RM) MANIFEST README.txt
 
 install:
-	python setup.py install
+	$(PYTHON) setup.py install
 
 isclean:
 	# Check that there are no leftover unversioned python files.
@@ -36,7 +37,7 @@ cleanup:
 	  xargs --no-run-if-empty -d\\n pepclean
 
 compile:
-	python -m compileall exactonline
+	$(PYTHON) -m compileall exactonline
 
 pep:
 	@# Use a custom --format so the path is space separated for
@@ -49,7 +50,7 @@ pep:
 test: $(PYFILES)
 	for py in $^; do echo "$$py TEST"; \
             pkg=`echo "$$py" | sed -e 's/\.py$$//;s/\//./g'`; \
-            python -m "$$pkg" || exit 1; done
+            $(PYTHON) -m "$$pkg"; done # || exit 1; done
 
 vimmodelines:
 	find $(WHERE) -name '*.py' -size +0 '!' -perm -u=x -print0 | \

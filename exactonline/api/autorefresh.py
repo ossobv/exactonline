@@ -13,7 +13,7 @@ class Autorefresh(object):
     def rest(self, method, resource, data=None):
         try:
             decoded = super(Autorefresh, self).rest(method, resource, data=data)
-        except HTTPError, e:
+        except HTTPError as e:
             if e.code != 401:
                 raise
 
