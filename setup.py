@@ -16,7 +16,7 @@ setup(
     version='0.1.1',
     packages=['exactonline', 'exactonline.api'],
     data_files=[('', ['LICENSE.txt', 'README.rst'])],
-    description='Exact Online REST API library in Python',
+    description='Exact Online REST API Library in Python',
     long_description=long_description,
     author='Walter Doekes',
     author_email='wjdoekes@osso.nl',

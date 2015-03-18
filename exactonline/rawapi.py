@@ -2,7 +2,7 @@
 """
 Base API interface.
 
-This file is part of the ExactOnline REST API Library in Python
+This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
 Copyright (C) 2015 Walter Doekes, OSSO B.V.
 """

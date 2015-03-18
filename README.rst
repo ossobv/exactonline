@@ -1,4 +1,4 @@
-Exact Online REST API library in Python
+Exact Online REST API Library in Python
 =======================================
 
 Exact Online is accounting software in Software-as-a-Service delivery
