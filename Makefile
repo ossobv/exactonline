@@ -50,7 +50,7 @@ pep:
 test: $(PYFILES)
 	for py in $^; do echo "$$py TEST"; \
             pkg=`echo "$$py" | sed -e 's/\.py$$//;s/\//./g'`; \
-            $(PYTHON) -m "$$pkg"; done # || exit 1; done
+            $(PYTHON) -m "$$pkg" || exit 1; done
 
 vimmodelines:
 	find $(WHERE) -name '*.py' -size +0 '!' -perm -u=x -print0 | \

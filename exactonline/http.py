@@ -16,7 +16,7 @@ import socket
 import ssl
 import sys
 
-from unittest import TestCase, main
+from unittest import TestCase, main, skip
 
 
 # ; helpers
@@ -268,52 +268,106 @@ def _http_request(url, method=None, data=None, opt=None):
 
 
 class HttpTestCase(TestCase):
-    def test_fixme1(self):
-        return
-        self.assertFalse(True)
+    class TestServer(object):
+        "Supersimple builtin HTTP test server."
+        def __init__(self, method, code, body):
+            from multiprocessing import Process
+            from socket import socket
 
-    def test_fixme2(self):
-        return
-        # Test the Options or-operator.
-        print('Testing OPTIONS')
+            self.method = method
+            self.code = code
+            self.body = body
+
+            self.socket = socket()
+            self.socket.bind(('127.0.0.1', 0))
+            self.port = self.socket.getsockname()[1]
+
+            self.process = Process(target=self.respond)
+            self.process.start()
+
+        def join(self):
+            self.socket.close()
+            self.process.join()
+
+        def respond(self):
+            self.socket.listen(0)
+            peersock, peeraddr = self.socket.accept()
+            data = peersock.recv(4096)
+            if data.startswith(self.method):
+                peersock.send(
+                    'HTTP/1.0 %s Whatever\r\n'
+                    'Content-Type: text/plain; utf-8\r\n'
+                    '\r\n%s' % (self.code, self.body))
+            else:
+                peersock.send(
+                    'HTTP/1.0 999 Unexpected stuff\r\n'
+                    'Content-Type: text/plain; utf-8\r\n'
+                    '\r\nUnexpected stuff')
+            peersock.close()
+
+    def test_options_or_operator(self):
         a = Options()
         a.protocols = ('ftp',)
         a.cacert_file = 'overwrite_me'
         b = Options()
         b.cacert_file = '/tmp/test.crt'
         c = a | b
-        assert c.protocols == ('ftp',)
-        assert c.verify_cert is False
-        assert c.cacert_file is '/tmp/test.crt'
 
-        # Test basic HTTP-get.
-        print('Testing BASIC http_get')
-        http_get('http://example.com/get')
+        self.assertEqual(c.protocols, ('ftp',))
+        self.assertFalse(c.verify_cert)
+        self.assertEqual(c.cacert_file, '/tmp/test.crt')
 
-        # Test other HTTP methods.
-        print('Testing BASIC http_post/http_put/http_delete')
-        http_post('http://example.com/get')     # this URL doesn't mind a POST
-        http_put('http://example.com/get')      # this URL doesn't mind a PUT
-        http_delete('http://example.com/get')   # this URL doesn't mind a DELETE
+    def test_testserver(self):
+        "Ensure that the testserver refuses if the method is bad."
+        server = HttpTestCase.TestServer('FAIL', '555', 'failure')
+        self.assertRaises(HTTPError, http_get,
+                          'http://127.0.0.1:%d/path' % (server.port,))
+        server.join()
 
-        # Test error documents.
-        print('Testing response fetching of error documents')
+    def test_delete(self):
+        server = HttpTestCase.TestServer('DELETE', '200', 'whatever1')
+        data = http_delete('http://127.0.0.1:%d/path' % (server.port,))
+        server.join()
+        self.assertEqual(data, 'whatever1')
+
+    def test_get(self):
+        server = HttpTestCase.TestServer('GET', '200', 'whatever2')
+        data = http_get('http://127.0.0.1:%d/path' % (server.port,))
+        server.join()
+        self.assertEqual(data, 'whatever2')
+
+    def test_post(self):
+        server = HttpTestCase.TestServer('POST', '200', 'whatever3')
+        data = http_post('http://127.0.0.1:%d/path' % (server.port,))
+        server.join()
+        self.assertEqual(data, 'whatever3')
+
+    def test_put(self):
+        server = HttpTestCase.TestServer('PUT', '200', 'whatever4')
+        data = http_put('http://127.0.0.1:%d/path' % (server.port,))
+        server.join()
+        self.assertEqual(data, 'whatever4')
+
+    def test_502(self):
+        server = HttpTestCase.TestServer('GET', '502', 'eRrOr')
         try:
-            http_get('http://example.com/502.html')
+            http_get('http://127.0.0.1:%d/path' % (server.port,))
         except HTTPError as e:
-            assert isinstance(e, urllib2.HTTPError)
-            assert e.response.find('</html>') != -1
+            self.assertTrue(isinstance(e, urllib2.HTTPError))
+            self.assertEqual(e.code, 502)
+            self.assertIn('eRrOr', e.response)
         else:
-            assert False, '502.html did not raise HTTPError'
+            self.assertFalse(True)
+        server.join()
 
-        # Test that HTTPS fails in secure mode.
-        print('Testing SECURE-only http_get')
-        try:
-            http_get('http://example.com', opt=opt_secure)
-        except BadProtocol:
-            pass
-        else:
-            assert False, 'Protocol check did not raise BadProtocol!'
+    def test_https_only(self):
+        self.assertRaises(BadProtocol, http_get,
+                          'http://127.0.0.1:80/path', opt=opt_secure)
+
+    @skip('this test is not done yet')
+    def test_fixme_fixme(self):
+        # - test actual POST data
+        # - test secure stuff?
 
         # Domain with bad cert.
         bad_cert_url = 'https://bad.cert.example.com/'
