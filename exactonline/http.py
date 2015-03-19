@@ -16,6 +16,7 @@ import socket
 import ssl
 import sys
 
+from os import path
 from unittest import TestCase, main, skip
 
 
@@ -270,15 +271,22 @@ def _http_request(url, method=None, data=None, opt=None):
 class HttpTestCase(TestCase):
     class TestServer(object):
         "Supersimple builtin HTTP test server."
-        def __init__(self, method, code, body):
+        def __init__(self, method, code, body, ssl=False):
             from multiprocessing import Process
             from socket import socket
+            from ssl import wrap_socket
 
             self.method = method
             self.code = code
             self.body = body
 
             self.socket = socket()
+            if ssl:
+                here = path.dirname(__file__)
+                self.socket = wrap_socket(
+                    self.socket,
+                    certfile=path.join(here, 'http-testserver.crt'),
+                    keyfile=path.join(here, 'http-testserver.key'))
             self.socket.bind(('127.0.0.1', 0))
             self.port = self.socket.getsockname()[1]
 
@@ -290,8 +298,15 @@ class HttpTestCase(TestCase):
             self.process.join()
 
         def respond(self):
+            from ssl import SSLError
+
             self.socket.listen(0)
-            peersock, peeraddr = self.socket.accept()
+            try:
+                peersock, peeraddr = self.socket.accept()
+            except SSLError:
+                # Broken connection by peer.
+                return
+
             data = peersock.recv(4096)
             if data.startswith(self.method):
                 peersock.send(
@@ -342,6 +357,10 @@ class HttpTestCase(TestCase):
         server.join()
         self.assertEqual(data, 'whatever3')
 
+    @skip('still needed: a test that actually checks the posted data')
+    def test_post_actual_data(self):
+        self.assertFalse(True)
+
     def test_put(self):
         server = HttpTestCase.TestServer('PUT', '200', 'whatever4')
         data = http_put('http://127.0.0.1:%d/path' % (server.port,))
@@ -355,37 +374,48 @@ class HttpTestCase(TestCase):
         except HTTPError as e:
             self.assertTrue(isinstance(e, urllib2.HTTPError))
             self.assertEqual(e.code, 502)
-            self.assertIn('eRrOr', e.response)
+            self.assertEqual(e.response, 'eRrOr')
         else:
             self.assertFalse(True)
         server.join()
 
-    def test_https_only(self):
+    def test_https_only_through_options(self):
         self.assertRaises(BadProtocol, http_get,
-                          'http://127.0.0.1:80/path', opt=opt_secure)
+                          'http://127.0.0.1/path', opt=opt_secure)
+        self.assertRaises(BadProtocol, http_get,
+                          'ftp://127.0.0.1/path', opt=opt_secure)
 
-    @skip('this test is not done yet')
-    def test_fixme_fixme(self):
-        # - test actual POST data
-        # - test secure stuff?
+    def test_https_no_secure(self):
+        server = HttpTestCase.TestServer('GET', '200', 'ssl', ssl=True)
+        data = http_get('https://127.0.0.1:%d/path' % (server.port,))
+        server.join()
+        self.assertEqual(data, 'ssl')
 
-        # Domain with bad cert.
-        bad_cert_url = 'https://bad.cert.example.com/'
+    def test_https_with_real_secure(self):
+        # This should work with a proper certificate.
+        data = http_get('https://api.github.com/', opt=opt_secure)
+        self.assertEqual(data[0:1], '{')  # json :)
 
-        # Test that HTTPS does a proper check.
-        print('Testing HTTPS http_get')
-        http_get('https://example.com/')     # good cert
-        http_get(bad_cert_url)               # bad cert, but don't care
+    def test_https_with_self_signed(self):
+        # This should fail, because the testserver uses a self-signed
+        # certificate.
+        server = HttpTestCase.TestServer('GET', '200', 'ssl', ssl=True)
+        self.assertRaises(urllib2.URLError, http_get,
+                          'https://127.0.0.1:%d/path' % (server.port,),
+                          opt=opt_secure)
+        server.join()
 
-        print('Testing HTTPS-secure http_get')
-        http_get('https://example.com/', opt=opt_secure)
-        try:
-            http_get(bad_cert_url, opt=opt_secure)
-        except urllib2.URLError:
-            pass  # ok!
-        else:
-            assert False, ('We did not catch the bad certificate of %r' %
-                           (bad_cert_url,))
+        # Retry when using that crt in the allow list. It should be
+        # allowed this time.
+        my_opt = Options()
+        my_opt.cacert_file = path.join(
+            path.dirname(__file__), 'http-testserver.crt')
+        my_opt = opt_secure | my_opt
+        server = HttpTestCase.TestServer('GET', '200', 'ssl2', ssl=True)
+        data = http_get('https://127.0.0.1:%d/path' % (server.port,),
+                        opt=my_opt)
+        server.join()
+        self.assertEqual(data, 'ssl2')
 
 
 if __name__ == '__main__':
