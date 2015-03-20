@@ -8,16 +8,26 @@ Copyright (C) 2015 Walter Doekes, OSSO B.V.
 
 We may want to replace this with something simpler.
 """
-import httplib
 import urllib
-import urllib2
-import urlparse
 import socket
 import ssl
 import sys
 
 from os import path
 from unittest import TestCase, main, skip
+
+try:
+    from http.client import HTTPConnection, HTTPS_PORT
+except ImportError:  # python2
+    from httplib import HTTPConnection, HTTPS_PORT
+try:
+    from urllib import request
+except ImportError:  # python2
+    import urllib2 as request
+try:
+    from urllib.parse import urljoin
+except ImportError:  # python2
+    from urlparse import urljoin
 
 
 # ; helpers
@@ -30,7 +40,7 @@ def binquote(value):
     """
     return urllib.quote(value.encode('utf-8'))
 
-urljoin = urlparse.urljoin
+urljoin  # touch it, we don't use it
 
 
 # ; http stuff
@@ -43,19 +53,23 @@ class BadProtocol(ValueError):
     pass
 
 
-class HTTPError(urllib2.HTTPError):
+class HTTPError(request.HTTPError):
     """
     Override the original HTTPError, drop the fp and add a response.
     """
     def __init__(self, url, code, msg, hdrs, response):
-        urllib2.HTTPError.__init__(self, url, code, msg, hdrs, None)
+        request.HTTPError.__init__(self, url, code, msg, hdrs, None)
         self.response = response
 
     def __str__(self):
-        assert isinstance(self.response, str)
-        response = self.response[0:512] + ('', '...')[len(self.response) > 512]
+        if not isinstance(self.response, str):
+            response = self.response.decode('utf-8', 'replace')
+        else:
+            response = self.response
+        response = response[0:512] + ('', '...')[len(response) > 512]
         response = ''.join(('?', i)[0x20 <= ord(i) <= 0x7F or i in '\t\n\r']
                            for i in response)
+        return 'PENA'
         return ('HTTPError: """%s %s\nContent-Type: %s\n'
                 'Content-Length: %d\n\n%s"""' %
                 (self.code, self.msg, self.hdrs.type, len(self.response),
@@ -104,12 +118,12 @@ opt_secure.protocols = ('https',)
 opt_secure.verify_cert = True
 
 
-class Request(urllib2.Request):
+class Request(request.Request):
     """
-    Override the urllib2.Request class to supply a custom method.
+    Override the request.Request class to supply a custom method.
     """
     def __init__(self, method=None, *args, **kwargs):
-        urllib2.Request.__init__(self, *args, **kwargs)
+        request.Request.__init__(self, *args, **kwargs)
         assert method in ('DELETE', 'GET', 'POST', 'PUT')
         self._method = method
 
@@ -117,7 +131,7 @@ class Request(urllib2.Request):
         return self._method
 
 
-class ValidHTTPSConnection(httplib.HTTPConnection):
+class ValidHTTPSConnection(HTTPConnection):
     """
     This class allows communication via SSL.
 
@@ -125,11 +139,11 @@ class ValidHTTPSConnection(httplib.HTTPConnection):
     Source: http://stackoverflow.com/questions/6648952/\
             urllib-and-validation-of-server-certificate
     """
-    default_port = httplib.HTTPS_PORT
+    default_port = HTTPS_PORT
     cacert_file = opt_default.cacert_file
 
     def __init__(self, *args, **kwargs):
-        httplib.HTTPConnection.__init__(self, *args, **kwargs)
+        HTTPConnection.__init__(self, *args, **kwargs)
 
     def connect(self):
         "Connect to a host on a given (SSL) port."
@@ -142,7 +156,7 @@ class ValidHTTPSConnection(httplib.HTTPConnection):
                                     cert_reqs=ssl.CERT_REQUIRED)
 
 
-class ValidHTTPSHandler(urllib2.HTTPSHandler):
+class ValidHTTPSHandler(request.HTTPSHandler):
     """
     Originally by: Walter Cacau, 2013-01-14
     Source: http://stackoverflow.com/questions/6648952/\
@@ -150,7 +164,7 @@ class ValidHTTPSHandler(urllib2.HTTPSHandler):
     """
     def __init__(self, cacert_file):
         self.cacert_file = cacert_file
-        urllib2.HTTPSHandler.__init__(self)
+        request.HTTPSHandler.__init__(self)
 
     def https_open(self, req):
         # If someone uses an alternate cacert_file, we have no decent
@@ -194,7 +208,7 @@ def http_post(url, data=None, opt=opt_default):
     elif data:
         data = urllib.urlencode(data)
     else:
-        data = ''  # ensure POST-mode
+        data = ''.encode('utf-8')  # ensure POST-mode
     return _http_request(url, method='POST', data=data, opt=opt)
 
 
@@ -209,7 +223,7 @@ def http_put(url, data=None, opt=opt_default):
     elif data:
         data = urllib.urlencode(data)
     else:
-        data = ''  # ensure POST-mode
+        data = ''.encode('utf-8')  # ensure POST-mode
     return _http_request(url, method='PUT', data=data, opt=opt)
 
 
@@ -223,24 +237,26 @@ def _http_request(url, method=None, data=None, opt=None):
     # Create URL opener.
     if opt.verify_cert:
         # It's legal to pass either a class or an instance here.
-        opener = urllib2.build_opener(ValidHTTPSHandler(opt.cacert_file))
+        opener = request.build_opener(ValidHTTPSHandler(opt.cacert_file))
     else:
-        opener = urllib2.build_opener()
+        opener = request.build_opener()
 
     # Create the Request with optional extra headers.
     req = Request(url=url, data=data, method=method,
                   headers=(opt.headers or {}))
 
-    exc_info, fp = None, None
+    exc_info, fp, stored_exception = None, None, None
     try:
         fp = opener.open(req)
         # print fp.info()  # (temp, print headers)
         response = fp.read()
-    except urllib2.HTTPError as exception:
+    except request.HTTPError as exception:
         fp = exception.fp  # see finally clause
         exc_info = sys.exc_info()
-    except Exception:
+        stored_exception = exception
+    except Exception as exception:
         exc_info = sys.exc_info()
+        stored_exception = exception
     finally:
         if fp:
             # Try a bit harder to flush the connection and close it
@@ -264,61 +280,64 @@ def _http_request(url, method=None, data=None, opt=None):
             fp.close()
 
     if exc_info:
-        raise  # exc_info[0], exc_info[1], exc_info[2]
+        raise stored_exception  # exc_info[0], exc_info[1], exc_info[2]
     return response
 
 
 class HttpTestCase(TestCase):
     class TestServer(object):
         "Supersimple builtin HTTP test server."
-        def __init__(self, method, code, body, ssl=False):
+        def __init__(self, method, code, body, use_ssl=False):
             from multiprocessing import Process
             from socket import socket
-            from ssl import wrap_socket
 
             self.method = method
             self.code = code
             self.body = body
 
             self.socket = socket()
-            if ssl:
+            if use_ssl:
                 here = path.dirname(__file__)
-                self.socket = wrap_socket(
+                self.socket = ssl.wrap_socket(
                     self.socket,
                     certfile=path.join(here, 'http-testserver.crt'),
                     keyfile=path.join(here, 'http-testserver.key'))
             self.socket.bind(('127.0.0.1', 0))
+            # We must listen() before starting the subprocess, otherwise
+            # the main process may get a connection refused if it's too
+            # fast.
+            self.socket.listen(0)
             self.port = self.socket.getsockname()[1]
 
             self.process = Process(target=self.respond)
             self.process.start()
+            self.socket.close()  # client is done with it
 
         def join(self):
-            self.socket.close()
             self.process.join()
 
         def respond(self):
-            from ssl import SSLError
-
-            self.socket.listen(0)
             try:
                 peersock, peeraddr = self.socket.accept()
-            except SSLError:
+            except ssl.SSLError:
                 # Broken connection by peer.
                 return
 
             data = peersock.recv(4096)
-            if data.startswith(self.method):
+            if HttpTestCase.to_str(data).startswith(self.method):
                 peersock.send(
-                    'HTTP/1.0 %s Whatever\r\n'
-                    'Content-Type: text/plain; utf-8\r\n'
-                    '\r\n%s' % (self.code, self.body))
+                    ('HTTP/1.0 %s Whatever\r\n'
+                     'Content-Type: text/plain; utf-8\r\n'
+                     '\r\n%s' % (self.code, self.body)
+                     ).encode('utf-8'))
             else:
                 peersock.send(
-                    'HTTP/1.0 999 Unexpected stuff\r\n'
-                    'Content-Type: text/plain; utf-8\r\n'
-                    '\r\nUnexpected stuff')
+                    ('HTTP/1.0 999 Unexpected stuff\r\n'
+                     'Content-Type: text/plain; utf-8\r\n'
+                     '\r\nUnexpected stuff'
+                     ).encode('utf-8'))
             peersock.close()
+            self.socket.close()  # server is done with it
 
     def test_options_or_operator(self):
         a = Options()
@@ -343,19 +362,19 @@ class HttpTestCase(TestCase):
         server = HttpTestCase.TestServer('DELETE', '200', 'whatever1')
         data = http_delete('http://127.0.0.1:%d/path' % (server.port,))
         server.join()
-        self.assertEqual(data, 'whatever1')
+        self.assertDataEqual(data, 'whatever1')
 
     def test_get(self):
         server = HttpTestCase.TestServer('GET', '200', 'whatever2')
         data = http_get('http://127.0.0.1:%d/path' % (server.port,))
         server.join()
-        self.assertEqual(data, 'whatever2')
+        self.assertDataEqual(data, 'whatever2')
 
     def test_post(self):
         server = HttpTestCase.TestServer('POST', '200', 'whatever3')
         data = http_post('http://127.0.0.1:%d/path' % (server.port,))
         server.join()
-        self.assertEqual(data, 'whatever3')
+        self.assertDataEqual(data, 'whatever3')
 
     @skip('still needed: a test that actually checks the posted data')
     def test_post_actual_data(self):
@@ -365,16 +384,16 @@ class HttpTestCase(TestCase):
         server = HttpTestCase.TestServer('PUT', '200', 'whatever4')
         data = http_put('http://127.0.0.1:%d/path' % (server.port,))
         server.join()
-        self.assertEqual(data, 'whatever4')
+        self.assertDataEqual(data, 'whatever4')
 
     def test_502(self):
         server = HttpTestCase.TestServer('GET', '502', 'eRrOr')
         try:
             http_get('http://127.0.0.1:%d/path' % (server.port,))
         except HTTPError as e:
-            self.assertTrue(isinstance(e, urllib2.HTTPError))
+            self.assertTrue(isinstance(e, request.HTTPError))
             self.assertEqual(e.code, 502)
-            self.assertEqual(e.response, 'eRrOr')
+            self.assertDataEqual(e.response, 'eRrOr')
         else:
             self.assertFalse(True)
         server.join()
@@ -386,21 +405,21 @@ class HttpTestCase(TestCase):
                           'ftp://127.0.0.1/path', opt=opt_secure)
 
     def test_https_no_secure(self):
-        server = HttpTestCase.TestServer('GET', '200', 'ssl', ssl=True)
+        server = HttpTestCase.TestServer('GET', '200', 'ssl', use_ssl=True)
         data = http_get('https://127.0.0.1:%d/path' % (server.port,))
         server.join()
-        self.assertEqual(data, 'ssl')
+        self.assertDataEqual(data, 'ssl')
 
     def test_https_with_real_secure(self):
         # This should work with a proper certificate.
         data = http_get('https://api.github.com/', opt=opt_secure)
-        self.assertEqual(data[0:1], '{')  # json :)
+        self.assertEqual(HttpTestCase.to_str(data)[0:1], '{')  # json :)
 
     def test_https_with_self_signed(self):
         # This should fail, because the testserver uses a self-signed
         # certificate.
-        server = HttpTestCase.TestServer('GET', '200', 'ssl', ssl=True)
-        self.assertRaises(urllib2.URLError, http_get,
+        server = HttpTestCase.TestServer('GET', '200', 'ssl', use_ssl=True)
+        self.assertRaises(request.URLError, http_get,
                           'https://127.0.0.1:%d/path' % (server.port,),
                           opt=opt_secure)
         server.join()
@@ -411,11 +430,29 @@ class HttpTestCase(TestCase):
         my_opt.cacert_file = path.join(
             path.dirname(__file__), 'http-testserver.crt')
         my_opt = opt_secure | my_opt
-        server = HttpTestCase.TestServer('GET', '200', 'ssl2', ssl=True)
+        server = HttpTestCase.TestServer('GET', '200', 'ssl2', use_ssl=True)
         data = http_get('https://127.0.0.1:%d/path' % (server.port,),
                         opt=my_opt)
         server.join()
-        self.assertEqual(data, 'ssl2')
+        self.assertDataEqual(data, 'ssl2')
+
+    # ; Python23 compatibility helpers
+
+    try:
+        unicode  # python2
+    except NameError:
+        to_str = staticmethod(lambda x: x.decode('utf-8'))  # unistr
+    else:
+        to_str = staticmethod(lambda x: x)  # binstr
+
+    def assertDataEqual(self, data, unistr):
+        """
+        Compares http_* returned data with a plain string. That plain string
+        can be unicode (python3) or binstring (python2). The data is always a
+        binstring.
+        """
+        unistr_passed = self.to_str(data)
+        self.assertEqual(unistr_passed, unistr)
 
 
 if __name__ == '__main__':

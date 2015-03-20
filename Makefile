@@ -1,7 +1,7 @@
 .PHONY: cleanup compile default install isclean pep test vimmodelines
 
-PYTHON = python  # or python3?
-WHERE = exactonline
+PYTHON = python  # or python3
+WHERE = ./exactonline
 PYFILES = $(wildcard $(WHERE)/*.py)
 DATAFILES = LICENSE.txt README.rst
 
@@ -48,9 +48,9 @@ pep:
             --format='%(path)s %(row)d:%(col)d [%(code)s] %(text)s'
 
 test: $(PYFILES)
-	for py in $^; do echo "$$py TEST"; \
+	for py in $^; do echo "TEST: $$py"; \
             pkg=`echo "$$py" | sed -e 's/\.py$$//;s/\//./g'`; \
-            $(PYTHON) -m "$$pkg" || exit 1; done
+            $(PYTHON) -m "$$pkg" || exit 1; echo; done
 
 vimmodelines:
 	find $(WHERE) -name '*.py' -size +0 '!' -perm -u=x -print0 | \
