@@ -1,21 +1,21 @@
 Exact Online REST API Library in Python
 =======================================
 
-Exact Online is accounting software in Software-as-a-Service delivery
-model. It implements an API through a REST interface. This library aims
-to ease its use.
+Exact Online provides accounting software in a Software-as-a-Service
+delivery model. It implements an API through a REST interface. This
+library aims to ease its use.
 
 
 
 Quick jump
 ----------
 
-* `Usage by example`_.
-* `Setting up the link`_.
-* `Implemented resources`_.
-* `Other benefits`_.
-* `TODO`_.
-* `Further reading`_.
+* `Usage by example`_
+* `Setting up the link`_
+* `Implemented resources`_
+* `Other benefits`_
+* `TODO`_
+* `Further reading`_
 
 
 
@@ -148,6 +148,7 @@ You'll need a storage backend. The default ``IniStorage`` can be taken from
 .. code-block:: python
 
     from exactonline.storage import IniStorage
+
     class MyIniStorage(IniStorage):
         def get_response_url():
             "Configure your custom response URL."
@@ -162,7 +163,7 @@ backend.)
 You need to set up access to your Exact Online SaaS instance, by creating an
 export link. See `Exact Online creating credentials`_ for more info.
 
-Now you need to take that info, and configurate it in your ``config.ini``.
+Take that info, and configure it in your ``config.ini``.
 
 .. code-block:: ini
 
@@ -183,8 +184,9 @@ Create an initial URL:
     api = ExactApi(storage=storage)
     url = api.create_auth_request_url()
 
-The URL will look like this, you should point your browser to that URL
-where you may log in:
+The URL will look like this; redirect the user there so he may
+authenticate and allow your application access to Exact Online (this is
+OAuth):
 
 .. code-block::
 
@@ -193,19 +195,20 @@ where you may log in:
       redirect_uri=https%3A//example.com/oauth/success/&
       response_type=code
 
-You'll get redirected back to:
+After authentication he will get redirected back to:
 
 .. code-block:: python
 
     https://example.com/oauth/success/?code=...
 
-You should implement a view on that URL, that does something like this:
+You should implement a view on that URL, that does basically this:
 
 .. code-block:: python
 
     api.request_token(code)
 
-At this point, you'll need to configure your division, if you haven't already:
+At this point, you should configure your default division, if you
+haven't already:
 
 .. code-block:: python
 
