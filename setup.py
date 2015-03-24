@@ -19,7 +19,7 @@ setup(
     description='Exact Online REST API Library in Python',
     long_description=long_description,
     author='Walter Doekes',
-    author_email='wjdoekes@osso.nl',
+    author_email='wjdoekes+exactonline@osso.nl',
     url='https://github.com/ossobv/exactonline',
     license='LGPLv3+',
     platforms=['linux'],
