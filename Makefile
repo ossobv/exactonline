@@ -1,4 +1,4 @@
-.PHONY: cleanup compile default install isclean pep test vimmodelines
+.PHONY: cleanup compile default dist install isclean pep test vimmodelines
 
 PYTHON = python  # or python3
 WHERE = ./exactonline
@@ -37,7 +37,7 @@ cleanup:
 	  xargs --no-run-if-empty -d\\n pepclean
 
 compile:
-	$(PYTHON) -m compileall exactonline
+	$(PYTHON) -m compileall $(WHERE)
 
 pep:
 	@# Use a custom --format so the path is space separated for

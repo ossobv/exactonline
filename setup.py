@@ -18,7 +18,7 @@ setup(
     data_files=[('', ['LICENSE.txt', 'README.rst'])],
     description='Exact Online REST API Library in Python',
     long_description=long_description,
-    author='Walter Doekes',
+    author='Walter Doekes, OSSO B.V.',
     author_email='wjdoekes+exactonline@osso.nl',
     url='https://github.com/ossobv/exactonline',
     license='LGPLv3+',
