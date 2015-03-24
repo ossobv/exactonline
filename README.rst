@@ -14,6 +14,7 @@ Quick jump
 * `Setting up the link`_
 * `Implemented resources`_
 * `Other benefits`_
+* `License`_
 * `TODO`_
 * `Further reading`_
 
@@ -274,6 +275,16 @@ The ExactApi class ensures that:
 * Tokens are refreshed as needed (see: ``exactonline/api/autorefresh.py``).
 * Paginated lists are automatically downloaded in full (see:
   ``exactonline/api/unwrap.py``).
+
+
+
+License
+-------
+
+Exact Online REST API Library in Python is free software: you can
+redistribute it and/or modify it under the terms of the GNU Lesser
+General Public License as published by the Free Software Foundation,
+version 3 or any later version.
 
 
 
