@@ -15,6 +15,7 @@ from .v1division import V1Division
 
 from .invoices import Invoices
 from .ledgeraccounts import LedgerAccounts
+from .receivables import Receivables
 from .relations import Relations
 
 
@@ -32,4 +33,5 @@ class ExactApi(
 ):
     invoices = Invoices.as_property()
     ledgeraccounts = LedgerAccounts.as_property()
+    receivables = Receivables.as_property()
     relations = Relations.as_property()

@@ -17,6 +17,7 @@ Quick jump
 * `License`_
 * `TODO`_
 * `Further reading`_
+* `Changes`_
 
 
 
@@ -232,6 +233,7 @@ Currently, it looks like this:
 
     invoices = Invoices.as_property()
     ledgeraccounts = LedgerAccounts.as_property()
+    receivables = Receivables.as_property()
     relations = Relations.as_property()
 
 But you can call resources which don't have a helper directly. The
@@ -291,9 +293,7 @@ version 3 or any later version.
 TODO
 ----
 
-* Add unittests to http.py.
 * Clean up http.py, removing half of it.
-* Test python3 support.
 * Replace base_url with response_url?
 * Add travis build stuff.
 
@@ -311,3 +311,14 @@ Further reading
 .. _`Exact Online creating credentials`: https://developers.exactonline.com/Content/restauthoauth.html
 .. _`Exact Online REST resources list`: https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
 .. _`Tips by Bas van Beek`: http://www.basvanbeek.nl/exact-online-tips/
+
+
+
+Changes
+-------
+
+* AFTER-v0.1.2:
+
+  - Add ``receivables`` manager to the API. This manager allows you to
+    build a list similar to the *Outstanding Receivables* page of
+    *Financial Reporting*.
