@@ -322,3 +322,7 @@ Changes
   - Add ``receivables`` manager to the API. This manager allows you to
     build a list similar to the *Outstanding Receivables* page of
     *Financial Reporting*.
+  - Add ``api.invoices.map_exact2foreign_invoice_numbers`` and
+    ``api.invoices.map_foreign2exact_invoice_numbers`` methods to
+    quickly get a mapping between our own and the ExactOnline invoice
+    numbers.
