@@ -14,7 +14,7 @@ import ssl
 import sys
 
 from os import path
-from unittest import TestCase, main, skip
+from unittest import TestCase, main, skip, skipIf
 
 try:
     from http.client import HTTPConnection, HTTPS_PORT
@@ -403,6 +403,9 @@ class HttpTestCase(TestCase):
         self.assertRaises(BadProtocol, http_get,
                           'ftp://127.0.0.1/path', opt=opt_secure)
 
+    @skipIf(sys.version_info >= (2, 7, 9),
+            'PEP-0476: Since Python 2.7.9, certificate verification is always '
+            'enabled.')
     def test_https_no_secure(self):
         server = HttpTestCase.TestServer('GET', '200', 'ssl', use_ssl=True)
         data = http_get('https://127.0.0.1:%d/path' % (server.port,))

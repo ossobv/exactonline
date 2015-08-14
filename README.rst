@@ -293,7 +293,6 @@ version 3 or any later version.
 TODO
 ----
 
-* Clean up http.py, removing half of it.
 * Replace base_url with response_url?
 * Add travis build stuff.
 
