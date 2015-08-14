@@ -23,11 +23,18 @@ This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
 Copyright (C) 2015 Walter Doekes, OSSO B.V.
 """
+from warnings import warn
+
 from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
 
 
 class ExactInvoice(ExactElement):
+    def get_guid(self):
+        exact_invoice = self._api.invoices.get(
+            invoice_number=self.get_invoice_number())
+        return exact_invoice['EntryID']
+
     def get_customer(self):
         # The ExactOnline customer id.
         raise NotImplementedError()
@@ -142,8 +149,8 @@ class ExactInvoice(ExactElement):
                     'Unknown VAT: %s' % (ledger_line['vat_percentage'],))
 
             # Again, convert from decimal to str to get more precision.
-            line = {'AmountDC': str(ledger_line['total_amount']),  # no vat
-                    'AmountFC': str(ledger_line['total_amount']),  # no vat
+            line = {'AmountDC': str(ledger_line['total_amount_excl_vat']),
+                    'AmountFC': str(ledger_line['total_amount_excl_vat']),
                     'Description': ledger_line['description'],
                     'GLAccount': ledger_id,
                     'VATCode': vatcode}
@@ -152,5 +159,32 @@ class ExactInvoice(ExactElement):
         return data
 
     def commit(self):
+        try:
+            exact_guid = self.get_guid()
+        except ObjectDoesNotExist:
+            exact_guid = None
+
         data = self.assemble()
-        return self._api.invoices.create(data)
+
+        if exact_guid:
+            # We cannot supply the lines on PUT/update directly.
+            salesentrylines = data.pop('SalesEntryLines')
+            # Update the invoice.
+            ret = self._api.invoices.update(exact_guid, data)
+            # FIXME: At this point we should compare and fix the
+            # salesentrylines.
+            # Example:
+            # > line_data = {'AmountFC': '-0.01', 'AmountDC': '-0.01',
+            # >              'EntryID': exact_guid, 'GLAccount': '6d28...'}
+            # > self._api.restv1('POST', 'salesentry/SalesEntryLines', line_data)
+            # Example:
+            # > inv._api.restv1('DELETE', "salesentry/SalesEntryLines" +
+            # >                           "(guid'0481...')")
+            warn('PUT of SalesEntry SalesEntryLines is not supported yet!')
+            del salesentrylines
+            # ret is None
+        else:
+            ret = self._api.invoices.create(data)
+            # ret is a exact_invoice
+
+        return ret

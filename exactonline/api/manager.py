@@ -76,8 +76,8 @@ class Manager(object):
 
     # == POST / create ==
 
-    def create(self, relation_dict):
-        ret = self._api.restv1('POST', str(self.resource), relation_dict)
+    def create(self, element_dict):
+        ret = self._api.restv1('POST', str(self.resource), element_dict)
         return ret
 
     # == DELETE / remove ==
@@ -90,10 +90,10 @@ class Manager(object):
 
     # == PUT / update ==
 
-    def update(self, remote_guid, relation_dict):
+    def update(self, remote_guid, element_dict):
         remote_id = self._remote_guid(remote_guid)
         uri = '%s(%s)' % (self.resource, remote_id)
-        ret = self._api.restv1('PUT', str(uri), relation_dict)
+        ret = self._api.restv1('PUT', str(uri), element_dict)
         return ret
 
     # == helpers ==
