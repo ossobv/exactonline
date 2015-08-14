@@ -17,7 +17,6 @@ Quick jump
 * `License`_
 * `TODO`_
 * `Further reading`_
-* `Changes`_
 
 
 
@@ -126,7 +125,7 @@ Create an invoice:
         # must start uniquely at the start of a year, defaults to:
         # YYJJ0001 where YY=invoice_date.year, and JJ=remote_journal
         'InvoiceNumber': '%d%d%04d' % (invoice_date.year, remote_journal,
-                                       int(local_invoice_number),
+                                       int(local_invoice_number)),
     }
     # The SalesEntryLines need to be filled with a bunch of dictionaries
     # with these keys: AmountDC, AmountFC, Description, GLAccount,
@@ -190,7 +189,7 @@ The URL will look like this; redirect the user there so he may
 authenticate and allow your application access to Exact Online (this is
 OAuth):
 
-.. code-block::
+.. ::
 
     https://start.exactonline.nl/api/oauth2/auth?
       client_id=%7B12345678-abcd-1234-abcd-0123456789ab%7D&
@@ -199,7 +198,7 @@ OAuth):
 
 After authentication he will get redirected back to:
 
-.. code-block:: python
+.. ::
 
     https://example.com/oauth/success/?code=...
 
@@ -293,6 +292,8 @@ version 3 or any later version.
 TODO
 ----
 
+* Right now, the section-links in the README.rst do not work in PyPI:
+  the quick jump links fail to emerge.
 * Replace base_url with response_url?
 * Add travis build stuff.
 
@@ -310,20 +311,3 @@ Further reading
 .. _`Exact Online creating credentials`: https://developers.exactonline.com/Content/restauthoauth.html
 .. _`Exact Online REST resources list`: https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
 .. _`Tips by Bas van Beek`: http://www.basvanbeek.nl/exact-online-tips/
-
-
-
-Changes
--------
-
-* v0.1.3:
-
-  - Add ``receivables`` manager to the API. This manager allows you to
-    build a list similar to the *Outstanding Receivables* page of
-    *Financial Reporting*.
-  - Add ``api.invoices.map_exact2foreign_invoice_numbers`` and
-    ``api.invoices.map_foreign2exact_invoice_numbers`` methods to
-    quickly get a mapping between our own and the ExactOnline invoice
-    numbers.
-  - Python3 compatibility.
-  - Minor fixes.

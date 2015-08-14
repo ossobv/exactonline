@@ -48,6 +48,9 @@ pep:
             --format='%(path)s %(row)d:%(col)d [%(code)s] %(text)s'
 
 test: $(PYFILES)
+	# Check RST, somewhat.
+	python setup.py check --restructuredtext --strict
+	# Run tests on the rest.
 	for py in $^; do echo "TEST: $$py"; \
             pkg=`echo "$$py" | sed -e 's/\.py$$//;s/\//./g'`; \
             $(PYTHON) -m "$$pkg" || exit 1; echo; done
