@@ -5,6 +5,8 @@ Changes
   
   - Update build/PyPI info: move to Stable, add Python 3.4 version.
   - Fix a few README RST issues.
+  - Add experimental ``exactonline.elements`` to use for easier object
+    oriented data submissions.
 
 * v0.1.3:
 
