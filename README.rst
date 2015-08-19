@@ -162,7 +162,7 @@ You'll need a storage backend. The default ``IniStorage`` can be taken from
 backend.)
 
 You need to set up access to your Exact Online SaaS instance, by creating an
-export link. See `Exact Online creating credentials`_ for more info.
+export link. See `creating Exact Online credentials`_ for more info.
 
 Take that info, and configure it in your ``config.ini``.
 
@@ -279,6 +279,33 @@ The ExactApi class ensures that:
 
 
 
+Creating Exact Online credentials
+---------------------------------
+
+Previously, one could create an API from the Exact Online interface directly.
+This was removed at some point between 2014 and 2015.
+
+According to the `"how can I create an application key?" FAQ entry`_
+you must now create one through the App Center.
+
+    *Why am I unable to see the Register an API link and how can I
+    create an application key?*
+
+    All registrations are now configured through the App Center.
+    Previously you were able to generate an Application Key and/or create an
+    OAuth registration within your Exact Online.
+
+    In Exact Online you can create an app registration for private use
+    (customer account) or an app registration for commercial use (partner
+    account). Go to Target groups and site maps for more information.
+
+    If the Register API Key link is not visible in the App Center
+    menu you do not have the correct rights to view it. To make the
+    link visible go to, Username > My Exact Online > Rights and
+    select Manage subscription.
+
+
+
 License
 -------
 
@@ -303,11 +330,11 @@ Further reading
 ---------------
 
 * `Exact Online REST API`_.
-* `Exact Online creating credentials`_.
-* `Exact Online REST resources list`_
+* `Exact Online REST resources list`_.
 * `Tips by Bas van Beek`_.
 
 .. _`Exact Online REST API`: https://developers.exactonline.com/#RestIntro.html%3FTocPath%3DExact%2520Online%2520REST%2520API%7C_____0
-.. _`Exact Online creating credentials`: https://developers.exactonline.com/Content/restauthoauth.html
 .. _`Exact Online REST resources list`: https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
 .. _`Tips by Bas van Beek`: http://www.basvanbeek.nl/exact-online-tips/
+
+.. _`"how can I create an application key?" FAQ entry`: https://developers.exactonline.com/#FAQ_General.htm%3FTocPath%3DApp%2520Center%7C_____5

@@ -5,7 +5,7 @@ if __name__ == '__main__':
     long_descriptions = []
     with open('README.rst') as file:
         long_descriptions.append(file.read())
-    with open('HISTORY.rst') as file:
+    with open('CHANGES.rst') as file:
         long_descriptions.append(file.read())
 
     setup(
