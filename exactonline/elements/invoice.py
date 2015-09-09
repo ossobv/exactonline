@@ -23,16 +23,13 @@ This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
 Copyright (C) 2015 Walter Doekes, OSSO B.V.
 """
-from warnings import warn
-
 from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
 
 
 class ExactInvoice(ExactElement):
     def get_guid(self):
-        exact_invoice = self._api.invoices.get(
-            invoice_number=self.get_invoice_number())
+        exact_invoice = self.__get_remote()
         return exact_invoice['EntryID']
 
     def get_customer(self):
@@ -110,13 +107,18 @@ class ExactInvoice(ExactElement):
             'Journal': self.get_exact_journal(),
             'ReportingPeriod': created_date.month,
             'ReportingYear': created_date.year,
-            'SalesEntryLines': [],
+            'SalesEntryLines': self.assemble_lines(),
             'VATAmountDC': str(total_vat),  # str>float, DC=default_currency
             'VATAmountFC': str(total_vat),  # str>float, FC=foreign_currency
             'YourRef': invoice_number,
 
             'InvoiceNumber': self.hint_exact_invoice_number(),
         }
+
+        return data
+
+    def assemble_lines(self):
+        ret = []
 
         # Fetch ledger lines.
         ledger_lines = self.get_ledger_lines()
@@ -154,9 +156,9 @@ class ExactInvoice(ExactElement):
                     'Description': ledger_line['description'],
                     'GLAccount': ledger_id,
                     'VATCode': vatcode}
-            data['SalesEntryLines'].append(line)
+            ret.append(line)
 
-        return data
+        return ret
 
     def commit(self):
         try:
@@ -167,24 +169,47 @@ class ExactInvoice(ExactElement):
         data = self.assemble()
 
         if exact_guid:
-            # We cannot supply the lines on PUT/update directly.
-            salesentrylines = data.pop('SalesEntryLines')
-            # Update the invoice.
+            # We cannot supply the SalesEntryLines in the dict like
+            # usual when we update (PUT). Instead, we add the new ones
+            # and remove the old ones by hand.
+            #
+            # You don't want to do that the other way around, because
+            # deleting the last item removes the entire invoice.
+            old_salesentrylines = self.__get_remote()['SalesEntryLines']
+
+            # Add new (and pop the SalesEntryLines from the invoice
+            # dict).
+            new_salesentrylines = data.pop('SalesEntryLines')
+            for line in new_salesentrylines:
+                line['EntryID'] = exact_guid
+                self._api.restv1('POST', 'salesentry/SalesEntryLines', line)
+
+            # Remove old.
+            for line in old_salesentrylines:
+                self._api.restv1(
+                    'DELETE', ("salesentry/SalesEntryLines(guid'%s')" %
+                               line['ID']))
+
+            # Update the invoice (without the SalesEntryLines).
             ret = self._api.invoices.update(exact_guid, data)
-            # FIXME: At this point we should compare and fix the
-            # salesentrylines.
-            # Example:
-            # > line_data = {'AmountFC': '-0.01', 'AmountDC': '-0.01',
-            # >              'EntryID': exact_guid, 'GLAccount': '6d28...'}
-            # > self._api.restv1('POST', 'salesentry/SalesEntryLines', line_data)
-            # Example:
-            # > inv._api.restv1('DELETE', "salesentry/SalesEntryLines" +
-            # >                           "(guid'0481...')")
-            warn('PUT of SalesEntry SalesEntryLines is not supported yet!')
-            del salesentrylines
             # ret is None
         else:
             ret = self._api.invoices.create(data)
             # ret is a exact_invoice
 
+        # Drop cache, if used.
+        if hasattr(self, '_cached_remote'):
+            del self._cached_remote
+
         return ret
+
+    def __get_remote(self):
+        if not hasattr(self, '_cached_remote'):
+            try:
+                self._cached_remote = self._api.invoices.get(
+                    invoice_number=self.get_invoice_number())
+            except ObjectDoesNotExist as e:
+                self._cached_remote = e
+        if isinstance(self._cached_remote, Exception):
+            raise self._cached_remote
+        return self._cached_remote
