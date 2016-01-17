@@ -187,18 +187,14 @@ Create an initial URL:
 
 The URL will look like this; redirect the user there so he may
 authenticate and allow your application access to Exact Online (this is
-OAuth):
-
-.. ::
+OAuth)::
 
     https://start.exactonline.nl/api/oauth2/auth?
       client_id=%7B12345678-abcd-1234-abcd-0123456789ab%7D&
       redirect_uri=https%3A//example.com/oauth/success/&
       response_type=code
 
-After authentication he will get redirected back to:
-
-.. ::
+After authentication he will get redirected back to::
 
     https://example.com/oauth/success/?code=...
 
