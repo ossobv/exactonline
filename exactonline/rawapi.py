@@ -109,6 +109,10 @@ class ExactRawApi(object):
                                  (method, resource, response))
             decoded = None
         else:
+
+            if response and not isinstance(response, str):
+                response = str(response, encoding='utf-8')
+
             try:
                 decoded = json.loads(response)
             except ValueError:
@@ -119,7 +123,7 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, method, url, data):
-        token = self.storage.get_access_token().encode('utf-8')
+        token = self.storage.get_access_token() #.encode('utf-8')
         opt_custom = Options()
         opt_custom.headers = {
             'Accept': 'application/json',
@@ -166,3 +170,4 @@ class ExactRawApi(object):
         self.storage.set_access_expiry(int(time()) + expires_in)
         self.storage.set_access_token(decoded['access_token'])
         self.storage.set_refresh_token(decoded['refresh_token'])
+        
