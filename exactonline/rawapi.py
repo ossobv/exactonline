@@ -149,6 +149,10 @@ class ExactRawApi(object):
         #  "token_type":"bearer",
         #  "expires_in":"600",
         #  "refresh_token":"__1P!I.."}
+
+        if not isinstance(jsondata, str):
+            jsondata = str(jsondata, encoding='utf-8')
+
         decoded = json.loads(jsondata)
 
         # Validate the values.
