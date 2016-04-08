@@ -25,9 +25,9 @@ try:
 except ImportError:  # python2
     import urllib2 as request
 try:
-    from urllib.parse import urljoin
+    from urllib.parse import urljoin, quote
 except ImportError:  # python2
-    from urlparse import urljoin
+    from urlparse import urljoin, quote
 
 
 # ; helpers
@@ -38,7 +38,7 @@ def binquote(value):
     does not like it when we encode slashes -- in the redirect_uri -- as
     well (which the latter does).
     """
-    return urllib.quote(value.encode('utf-8'))
+    return quote(value.encode('utf-8'))
 
 urljoin  # touch it, we don't use it
 
