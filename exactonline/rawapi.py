@@ -170,4 +170,7 @@ class ExactRawApi(object):
         self.storage.set_access_expiry(int(time()) + expires_in)
         self.storage.set_access_token(decoded['access_token'])
         self.storage.set_refresh_token(decoded['refresh_token'])
-        
+
+        if 'store_tokens' in dir(self.storage):
+            self.storage.store_tokens()
+
