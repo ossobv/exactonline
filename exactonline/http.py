@@ -227,6 +227,15 @@ def http_put(url, data=None, opt=opt_default):
 
 
 def _http_request(url, method=None, data=None, opt=None):
+
+    # url is bytes, not string, check and convert
+    if url and not isinstance(url, str):
+        url = url.decode('utf-8')
+
+    # data is string, not bytes, check and convert:
+    if data and not isinstance(data, bytes):
+        data = bytes(data, encoding='utf-8')
+
     # Check protocol.
     proto = url.split(':', 1)[0]
     if proto not in opt.protocols:
