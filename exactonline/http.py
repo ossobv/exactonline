@@ -81,7 +81,8 @@ class Options(object):
     # Do we validate the SSL certificate.
     verify_cert = False
     # What we use to validate the SSL certificate.
-    cacert_file = '/etc/ssl/certs/ca-certificates.crt'
+    # cacert_file = '/etc/ssl/certs/ca-certificates.crt'
+    cacert_file = '/etc/ssl/certs/ca-bundle.crt'
     # Optional headers.
     headers = None
 
