@@ -25,9 +25,9 @@ try:
 except ImportError:  # python2
     import urllib2 as request
 try:
-    from urllib.parse import urljoin
+    from urllib.parse import urljoin, quote
 except ImportError:  # python2
-    from urlparse import urljoin
+    from urlparse import urljoin, quote
 
 
 # ; helpers
@@ -38,7 +38,7 @@ def binquote(value):
     does not like it when we encode slashes -- in the redirect_uri -- as
     well (which the latter does).
     """
-    return urllib.quote(value.encode('utf-8'))
+    return quote(value.encode('utf-8'))
 
 urljoin  # touch it, we don't use it
 
@@ -81,7 +81,8 @@ class Options(object):
     # Do we validate the SSL certificate.
     verify_cert = False
     # What we use to validate the SSL certificate.
-    cacert_file = '/etc/ssl/certs/ca-certificates.crt'
+    # cacert_file = '/etc/ssl/certs/ca-certificates.crt'
+    cacert_file = '/etc/ssl/certs/ca-bundle.crt'
     # Optional headers.
     headers = None
 
@@ -227,6 +228,15 @@ def http_put(url, data=None, opt=opt_default):
 
 
 def _http_request(url, method=None, data=None, opt=None):
+
+    # url is bytes, not string, check and convert
+    if url and not isinstance(url, str):
+        url = url.decode('utf-8')
+
+    # data is string, not bytes, check and convert:
+    if data and not isinstance(data, bytes):
+        data = bytes(data, encoding='utf-8')
+
     # Check protocol.
     proto = url.split(':', 1)[0]
     if proto not in opt.protocols:

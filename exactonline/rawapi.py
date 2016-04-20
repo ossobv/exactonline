@@ -32,8 +32,7 @@ class ExactRawApi(object):
                      '&response_type=%(response_type)s' %
                      auth_params)
 
-        url = '?'.join([self.storage.get_auth_url().encode('utf-8'),
-                        auth_data])
+        url = '?'.join([self.storage.get_auth_url(), auth_data])
         return url
 
     def request_token(self, code):
@@ -110,6 +109,10 @@ class ExactRawApi(object):
                                  (method, resource, response))
             decoded = None
         else:
+
+            if response and not isinstance(response, str):
+                response = str(response, encoding='utf-8')
+
             try:
                 decoded = json.loads(response)
             except ValueError:
@@ -120,7 +123,7 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, method, url, data):
-        token = self.storage.get_access_token().encode('utf-8')
+        token = self.storage.get_access_token() #.encode('utf-8')
         opt_custom = Options()
         opt_custom.headers = {
             'Accept': 'application/json',
@@ -150,6 +153,10 @@ class ExactRawApi(object):
         #  "token_type":"bearer",
         #  "expires_in":"600",
         #  "refresh_token":"__1P!I.."}
+
+        if not isinstance(jsondata, str):
+            jsondata = str(jsondata, encoding='utf-8')
+
         decoded = json.loads(jsondata)
 
         # Validate the values.
@@ -163,3 +170,7 @@ class ExactRawApi(object):
         self.storage.set_access_expiry(int(time()) + expires_in)
         self.storage.set_access_token(decoded['access_token'])
         self.storage.set_refresh_token(decoded['refresh_token'])
+
+        if 'store_tokens' in dir(self.storage):
+            self.storage.store_tokens()
+
