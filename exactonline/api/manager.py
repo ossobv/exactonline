@@ -60,7 +60,7 @@ class Manager(object):
         # kwargs = {'filter': "EntryDate+gt+datetime'2014-01-01'", 'top': 5}
         args = []
         for key, value in kwargs.items():
-            if isinstance(value, unicode):
+            if not isinstance(value, str):
                 value = value.encode('utf-8')
             else:
                 value = str(value)
