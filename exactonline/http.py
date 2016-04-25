@@ -14,6 +14,10 @@ import ssl
 import sys
 
 try:
+    from ssl import create_default_context
+except ImportError:  # python2.7.9-
+    create_default_context = None
+try:
     from http.client import HTTPConnection, HTTPS_PORT
 except ImportError:  # python2
     from httplib import HTTPConnection, HTTPS_PORT
@@ -26,6 +30,12 @@ try:
 except ImportError:  # python2
     from urllib import quote
     from urlparse import urljoin
+
+# For older Python, use this. For newer Python, use nothing to get
+# libssl-selected files instead. You can choose to override this
+# by importing it exactonline.http and updating this value before
+# calling http_*.
+FALLBACK_CACERT_FILE = '/etc/ssl/certs/ca-certificates.crt'
 
 
 # ; helpers
@@ -79,7 +89,7 @@ class Options(object):
     # Do we validate the SSL certificate.
     verify_cert = False
     # What we use to validate the SSL certificate.
-    cacert_file = '/etc/ssl/certs/ca-certificates.crt'
+    cacert_file = None  # None means "use default or fallback if no default"
     # Optional headers.
     headers = None
 
@@ -151,8 +161,21 @@ class ValidHTTPSConnection(HTTPConnection):
         if self._tunnel_host:
             self.sock = sock
             self._tunnel()
-        self.sock = ssl.wrap_socket(sock, ca_certs=self.cacert_file,
-                                    cert_reqs=ssl.CERT_REQUIRED)
+
+        # Python 2.7.9+
+        if create_default_context:
+            # Newer python will use the "right" cacert file automatically. So
+            # the default of None can safely be passed along.
+            ctx = create_default_context(cafile=self.cacert_file)
+            sock = ctx.wrap_socket(sock, server_hostname=self.host)
+        else:
+            # Take the supplied file, or FALLBACK_CACERT_FILE if nothing
+            # was supplied.
+            cacert_file = self.cacert_file or FALLBACK_CACERT_FILE
+            sock = ssl.wrap_socket(sock, ca_certs=cacert_file,
+                                   cert_reqs=ssl.CERT_REQUIRED)
+
+        self.sock = sock
 
 
 class ValidHTTPSHandler(request.HTTPSHandler):

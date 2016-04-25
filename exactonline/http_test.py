@@ -95,7 +95,7 @@ class HttpTestCase(TestCase):
         self.assertEqual(c.cacert_file, '/tmp/test.crt')
 
     def test_testserver(self):
-        "Ensure that the testserver refuses if the method is bad."
+        # Ensure that the testserver refuses if the method is bad.
         server = HttpTestServer('FAIL', '555', 'failure')
         self.assertRaises(HTTPError, http_get,
                           'http://127.0.0.1:%d/path' % (server.port,))
@@ -180,6 +180,16 @@ class HttpTestCase(TestCase):
                         opt=my_opt)
         server.join()
         self.assertDataEqual(data, 'ssl2')
+
+    def test_https_with_disallowed_real_secure(self):
+        # This should fail because we use a custom cacert file which won't
+        # contain the real cert.
+        my_opt = Options()
+        my_opt.cacert_file = path.join(
+            path.dirname(__file__), 'http_testserver.crt')
+        my_opt = opt_secure | my_opt
+        self.assertRaises(request.URLError, http_get,
+                          'https://api.github.com/', opt=my_opt)
 
     # ; Python23 compatibility helpers
 
