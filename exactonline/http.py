@@ -33,8 +33,8 @@ except ImportError:  # python2
 
 # For older Python, use this. For newer Python, use nothing to get
 # libssl-selected files instead. You can choose to override this
-# by importing it exactonline.http and updating this value before
-# calling http_*.
+# by importing exactonline.http and updating this value before calling
+# any of the http_* functions (through an exactonline API call).
 FALLBACK_CACERT_FILE = '/etc/ssl/certs/ca-certificates.crt'
 
 
