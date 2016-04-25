@@ -10,6 +10,17 @@ from ..exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from ..http import binquote
 
 
+# ; Python23 compatibility helpers
+try:
+    unicode  # python2
+except NameError:
+    to_binstr = (lambda x: x.encode('utf-8'))  # unistr-to-binstr
+    to_unistr = str  # nonstr-to-unistr
+else:
+    to_binstr = str
+    to_unistr = unicode  # non-str-to-unistr
+
+
 class Manager(object):
     """
     Inherit from this when you're creating a property on the ExactApi,
@@ -60,18 +71,14 @@ class Manager(object):
         # kwargs = {'filter': "EntryDate+gt+datetime'2014-01-01'", 'top': 5}
         args = []
         for key, value in kwargs.items():
-            if isinstance(value, unicode):
-                value = value.encode('utf-8')
-            else:
-                value = str(value)
-            args.append('$%s=%s' % (str(key), binquote(value)))
+            args.append('$%s=%s' % (
+                key, binquote(to_unistr(value))))
         if args:
             args = ('?' + '&'.join(args))
         else:
             args = ''
 
-        assert isinstance(args, str)
-        ret = self._api.restv1('GET', str(self.resource) + args)
+        ret = self._api.restv1('GET', self.resource + args)
         return ret
 
     # == POST / create ==

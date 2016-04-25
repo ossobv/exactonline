@@ -110,6 +110,15 @@ class ExactRawApi(object):
                                  (method, resource, response))
             decoded = None
         else:
+            if not hasattr(response, 'encode'):
+                # Python3: json.loads() wants an unistr.
+                try:
+                    response = response.decode('utf-8')
+                except UnicodeDecodeError:
+                    raise ValueError('Expected valid JSON encoding for %s '
+                                     'operation: resource=%r, returned=%r' %
+                                     (method, resource, response))
+
             try:
                 decoded = json.loads(response)
             except ValueError:
@@ -120,11 +129,11 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, method, url, data):
-        token = self.storage.get_access_token().encode('utf-8')
+        token = self.storage.get_access_token()
         opt_custom = Options()
         opt_custom.headers = {
             'Accept': 'application/json',
-            'Authorization': 'Bearer ' + token,
+            'Authorization': 'Bearer %s' % (token,),
         }
         if method in ('POST', 'PUT'):
             opt_custom.headers.update({'Content-Type': 'application/json'})
