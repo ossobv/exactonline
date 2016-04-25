@@ -300,6 +300,17 @@ you must now create one through the App Center.
     link visible go to, Username > My Exact Online > Rights and
     select Manage subscription.
 
+Log into the `Exact Online App Center`_, click MANAGE APPS (APPS BEHEREN);
+it should be a large links visible on the Top Right. Make sure the redirect
+URI has the same transport+domainname as the site that you wish to connect.
+
+For sites with an internal URI only, you may need to alter the hostname
+temporarily when registering. Generate the register URL with
+``api.create_auth_request_url`` and alter it as appropriate.
+
+After creating the App, you can go back and fetch the the *Client ID*
+and the *Client secret*.
+
 
 
 License
@@ -329,6 +340,7 @@ Further reading
 * `Exact Online REST resources list`_.
 * `Tips by Bas van Beek`_.
 
+.. _`Exact Online App Center`: https://apps.exactonline.com/
 .. _`Exact Online REST API`: https://developers.exactonline.com/#RestIntro.html%3FTocPath%3DExact%2520Online%2520REST%2520API%7C_____0
 .. _`Exact Online REST resources list`: https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
 .. _`Tips by Bas van Beek`: http://www.basvanbeek.nl/exact-online-tips/
