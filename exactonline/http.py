@@ -25,8 +25,9 @@ try:
 except ImportError:  # python2
     import urllib2 as request
 try:
-    from urllib.parse import urljoin
+    from urllib.parse import urljoin, quote
 except ImportError:  # python2
+    from urllib import quote
     from urlparse import urljoin
 
 
@@ -38,7 +39,7 @@ def binquote(value):
     does not like it when we encode slashes -- in the redirect_uri -- as
     well (which the latter does).
     """
-    return urllib.quote(value.encode('utf-8'))
+    return quote(value.encode('utf-8'))
 
 urljoin  # touch it, we don't use it
 
@@ -456,6 +457,13 @@ class HttpTestCase(TestCase):
         """
         unistr_passed = self.to_str(data)
         self.assertEqual(unistr_passed, unistr)
+
+
+class UtilTestCase(TestCase):
+    def test_binquote(self):
+        self.assertEqual(binquote('abc'), 'abc')
+        self.assertEqual(binquote('abc/def'), 'abc/def')  # don't touch /
+        self.assertEqual(binquote('abc=def'), 'abc%3Ddef') # do touch =
 
 
 if __name__ == '__main__':
