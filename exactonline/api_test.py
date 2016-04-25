@@ -16,7 +16,7 @@ from .storage import ExactOnlineConfig, NoOptionError
 from .http_test import HttpTestServer
 
 
-# BEWARE: We disable security here! Don't call import this unless you're
+# BEWARE: We disable security here! Don't import this unless you're
 # running tests!
 opt_secure.protocols = ('http', 'https')
 
