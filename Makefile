@@ -43,17 +43,15 @@ pep:
 	@# Use a custom --format so the path is space separated for
 	@# easier copy-pasting.
 	find $(WHERE) -name '*.py' -print0 | \
-          xargs --no-run-if-empty -0 flake8 \
+          xargs --no-run-if-empty -0 $(PYTHON) -m flake8 \
             --max-line-length=99 --max-complexity=10 \
             --format='%(path)s %(row)d:%(col)d [%(code)s] %(text)s'
 
 test: $(PYFILES)
 	# Check RST, somewhat.
-	python setup.py check --restructuredtext --strict
+	$(PYTHON) setup.py check --restructuredtext --strict
 	# Run tests on the rest.
-	for py in $^; do echo "TEST: $$py"; \
-            pkg=`echo "$$py" | sed -e 's/\.py$$//;s/\//./g'`; \
-            $(PYTHON) -m "$$pkg" || exit 1; echo; done
+	./test.sh
 
 vimmodelines:
 	find $(WHERE) -name '*.py' -size +0 '!' -perm -u=x -print0 | \
