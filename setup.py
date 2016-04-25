@@ -28,6 +28,7 @@ if __name__ == '__main__':
             'Operating System :: POSIX :: Linux',
             'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
             'Topic :: Office/Business :: Financial',
             'Topic :: Office/Business :: Financial :: Accounting',
             'Topic :: Software Development :: Libraries',

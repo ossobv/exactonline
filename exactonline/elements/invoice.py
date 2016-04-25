@@ -27,6 +27,13 @@ from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
 
 
+# Python23 compatibility helpers
+try:
+    basestring  # python2 only
+except NameError:
+    basestring = str
+
+
 class ExactInvoice(ExactElement):
     def get_guid(self):
         exact_invoice = self.__get_remote()
@@ -128,7 +135,7 @@ class ExactInvoice(ExactElement):
             assert isinstance(ledger_lines[0]['code'], basestring)
             ledger_ids = self._api.ledgeraccounts.filter(
                 code__in=set([i['code'] for i in ledger_lines]))
-            ledger_ids = dict((unicode(i['Code']), i['ID'])
+            ledger_ids = dict((str(i['Code']), i['ID'])
                               for i in ledger_ids)
 
         for ledger_line in self.get_ledger_lines():
