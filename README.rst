@@ -11,6 +11,7 @@ Quick jump
 ----------
 
 * `Usage by example`_
+* `Using element adapters`_
 * `Setting up the link`_
 * `Implemented resources`_
 * `Other benefits`_
@@ -137,6 +138,65 @@ Create an invoice:
 You may need to play around a bit to find out which fields are
 mandatory, and what kind of values the fields need.  The `Exact Online
 REST resources list`_ isn't always clear on that.
+
+
+
+Using element adapters
+----------------------
+
+Using the above works, but it's not really object oriented. If
+available, you may be better off using one of the adaptable classes in
+``exactonline.elements`` and subclassing that.
+
+For example, this is how you could create your own interface to an Exact
+Online customer.
+
+.. code-block:: python
+
+    # Assuming you have a MyRelation that looks like this:
+    class MyRelation(object):
+        relcode = 12345
+        first_name = 'John'
+        last_name = 'Doe'
+        billing_address = None
+        # ...
+
+    # You could create an adapter subclass of ExactCustomer like this:
+    class MyExactCustomer(ExactCustomer):
+        def __init__(self, my_relation=None, **kwargs):
+            super(MyExactCustomer, self).__init__(**kwargs)
+            self._my_relation = my_relation
+
+        def get_code(self):
+            return str(self._my_relation.relcode)
+
+        def get_name(self):
+            return ' '.join([
+                self._my_relation.first_name,
+                self._my_relation.last_name])
+
+        def get_address(self):
+            address = self._my_relation.billing_address
+            if address:
+                return {
+                    'AddressLine1': address.street_and_number(),
+                    'Postcode': address.zipcode,
+                    'City': address.city.name,
+                }
+            return {}
+
+If you have the above set up, and have unique customer codes, then
+writing/updating an Exact Online relation is as convenient as this:
+
+.. code-block:: python
+
+    johndoe = MyRelation(...)
+    exactonline_relation = MyExactCustomer(my_relation=johndoe, api=api)
+    ret = exactonline_relation.commit()
+
+These adaptable elements are currently implemented for writing customers
+(ExactCustomer) and invoices (ExactInvoice). See the files in
+``exactonline/elements/`` for more info.
 
 
 
