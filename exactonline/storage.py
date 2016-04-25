@@ -185,14 +185,20 @@ class IniStorage(ExactOnlineConfig, ConfigParser):
             self.read(filename_or_fp)
             self.overwrite = filename_or_fp
 
-    def get(self, section, option):
+    def get(self, section, option, **kwargs):
         """
         Get method that raises NoOptionError if the value was unset.
         This differs from the SafeConfigParser which may also raise a
         NoSectionError.
+
+        We take extra **kwargs because the Python 3.5 configparser extends the
+        get method signature and it calls self with those parameters.
+
+            def get(self, section, option, *, raw=False, vars=None,
+                    fallback=_UNSET):
         """
         try:
-            ret = super(ExactOnlineConfig, self).get(section, option)
+            ret = super(ExactOnlineConfig, self).get(section, option, **kwargs)
         except NoSectionError:
             raise NoOptionError(option, section)
         return ret

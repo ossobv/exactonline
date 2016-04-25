@@ -427,16 +427,17 @@ class HttpTestCase(TestCase):
         server.join()
 
         # Retry when using that crt in the allow list. It should be
-        # allowed this time.
-        my_opt = Options()
-        my_opt.cacert_file = path.join(
-            path.dirname(__file__), 'http-testserver.crt')
-        my_opt = opt_secure | my_opt
-        server = HttpTestCase.TestServer('GET', '200', 'ssl2', use_ssl=True)
-        data = http_get('https://127.0.0.1:%d/path' % (server.port,),
-                        opt=my_opt)
-        server.join()
-        self.assertDataEqual(data, 'ssl2')
+        # allowed this time. Except not with python 2.7.9 and above.
+        if sys.version_info < (2, 7, 9):
+            my_opt = Options()
+            my_opt.cacert_file = path.join(
+                path.dirname(__file__), 'http-testserver.crt')
+            my_opt = opt_secure | my_opt
+            server = HttpTestCase.TestServer('GET', '200', 'ssl2', use_ssl=True)
+            data = http_get('https://127.0.0.1:%d/path' % (server.port,),
+                            opt=my_opt)
+            server.join()
+            self.assertDataEqual(data, 'ssl2')
 
     # ; Python23 compatibility helpers
 
