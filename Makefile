@@ -9,13 +9,14 @@ default: cleanup vimmodelines pep compile test
 
 dist: isclean $(PYFILES) $(DATAFILES)
 	# sdist likes a reStructuredText README.txt
-	cp -n README.rst README.txt
+	#cp -n README.rst README.txt
 	# do the sdist
 	$(PYTHON) setup.py sdist
 	##python setup.py register # only needed once
 	#python setup.py sdist upload
 	# clean up
-	$(RM) MANIFEST README.txt
+	$(RM) MANIFEST
+	#README.txt
 
 install:
 	$(PYTHON) setup.py install
@@ -55,10 +56,6 @@ test: $(PYFILES)
 
 vimmodelines:
 	find $(WHERE) -name '*.py' -size +0 '!' -perm -u=x -print0 | \
-	  xargs --no-run-if-empty -0 grep -L '^# vim:' | \
+	  xargs --no-run-if-empty -0 grep -L '^# v''im:' | \
 	  xargs --no-run-if-empty -d\\n \
 	    sed -i -e '1i# vim: set ts=8 sw=4 sts=4 et ai tw=79:'
-
-#
-#
-#

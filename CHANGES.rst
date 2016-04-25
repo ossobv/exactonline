@@ -1,12 +1,14 @@
 Changes
 -------
 
-* v0.1.4a:
+* v0.2.0:
   
-  - Update build/PyPI info: move to Stable, add Python 3.4 version.
+  - Update build/PyPI info: move to Stable, add Python 3.4 and 3.5
+    version, fix Python 3 compatibility.
   - Fix a few README RST issues. Update OAuth documentation.
-  - Add experimental ``exactonline.elements`` to use for easier object
+  - Add initial ``exactonline.elements`` to use for easier object
     oriented data submissions.
+  - Add and improve SSL, API and Python3 tests.
 
 * v0.1.3:
 
