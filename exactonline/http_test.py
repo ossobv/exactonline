@@ -170,9 +170,6 @@ class HttpTestCase(TestCase):
                           opt=opt_secure)
         server.join()
 
-    @skipIf(sys.version_info >= (2, 7, 9),
-            'PEP-0476: Since Python 2.7.9, certificate verification is always '
-            'enabled.')
     def test_https_with_allowed_self_signed(self):
         my_opt = Options()
         my_opt.cacert_file = path.join(
