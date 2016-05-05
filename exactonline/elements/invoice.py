@@ -27,11 +27,12 @@ from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
 
 
-# Python23 compatibility helpers
-try:
-    basestring  # python2 only
-except NameError:
-    basestring = str
+class UnknownLedgerCodes(ExactOnlineError):
+    def __init__(self, ledger_codes):
+        super(UnknownLedgerCodes, self).__init__(
+            'One or more ledger codes are not found in Exact: %s' % (
+                ', '.join(ledger_codes),))
+        self.ledger_codes = ledger_codes
 
 
 class ExactInvoice(ExactElement):
@@ -51,6 +52,28 @@ class ExactInvoice(ExactElement):
     def get_exact_journal(self):
         # E.g. "70" for "Verkoopboek"
         raise NotImplementedError()
+
+    def get_ledger_code_to_guid_map(self, codes):
+        """
+        Convert set of human codes and to a dict of code to exactonline
+        guid mappings.
+
+        Example::
+
+            ret = inv.get_ledger_code_to_guid_map(['1234', '5555'])
+            ret == {'1234': '<guid1_from_exactonline_ledgeraccounts>',
+                    '5555': '<guid2_from_exactonline_ledgeraccounts>'}
+        """
+        if codes:
+            codes = set(str(i) for i in codes)
+            ledger_ids = self._api.ledgeraccounts.filter(code__in=codes)
+            ret = dict((str(i['Code']), i['ID']) for i in ledger_ids)
+            found = set(ret.keys())
+            missing = (codes - found)
+            if missing:
+                raise UnknownLedgerCodes(missing)
+            return ret
+        return {}
 
     def get_ledger_lines(self):
         # Return a bunch of ledger lines, like this:
@@ -131,21 +154,10 @@ class ExactInvoice(ExactElement):
         ledger_lines = self.get_ledger_lines()
 
         # Cache ledger codes to ledger GUIDs.
-        if ledger_lines:
-            assert isinstance(ledger_lines[0]['code'], basestring)
-            ledger_ids = self._api.ledgeraccounts.filter(
-                code__in=set([i['code'] for i in ledger_lines]))
-            ledger_ids = dict((str(i['Code']), i['ID'])
-                              for i in ledger_ids)
+        ledger_ids = self.get_ledger_code_to_guid_map(
+            set(i['code'] for i in ledger_lines))
 
         for ledger_line in self.get_ledger_lines():
-            try:
-                ledger_id = ledger_ids[ledger_line['code']]
-            except KeyError:
-                raise ExactOnlineError(
-                    'Cannot submit invoice with ledger code %s' %
-                    (ledger_line['code'],))
-
             # We must use VATCode. It accepts VATPercentages, but only
             # when it is higher than 0. Not using:
             # 'VATPercentage': str(ledger_line['vat_percentage'] / 100)
@@ -161,7 +173,7 @@ class ExactInvoice(ExactElement):
             line = {'AmountDC': str(ledger_line['total_amount_excl_vat']),
                     'AmountFC': str(ledger_line['total_amount_excl_vat']),
                     'Description': ledger_line['description'],
-                    'GLAccount': ledger_id,
+                    'GLAccount': ledger_ids[ledger_line['code']],
                     'VATCode': vatcode}
             ret.append(line)
 
