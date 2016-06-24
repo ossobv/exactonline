@@ -1,6 +1,11 @@
 Changes
 -------
 
+* v0.2.2:
+
+  - Correct RST source in CHANGES file. Did not display properly on
+    PyPI.
+
 * v0.2.1:
 
   - Correct example Python code in docs. Thanks @alexBaizeau.
