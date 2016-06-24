@@ -2,6 +2,7 @@ Changes
 -------
 
 * v0.2.1:
+
   - Correct example Python code in docs. Thanks @alexBaizeau.
   - Add ``exactonline.elements`` that were missing in the 0.2.0
     distributed package. Thanks @hcwsegers.

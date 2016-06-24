@@ -390,6 +390,8 @@ TODO
   the quick jump links fail to emerge.
 * Replace base_url with response_url?
 * Add travis build stuff.
+* Fix automatic versioning so we can stop hardcoding the version in
+  setup.py.
 
 
 
