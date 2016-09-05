@@ -5,66 +5,71 @@ automatically; it unpaginates resultsets.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015 Walter Doekes, OSSO B.V.
+Copyright (C) 2015,2016 Walter Doekes, OSSO B.V.
 """
 
 
 class Unwrap(object):
-    def rest(self, method, resource, data=None, recursion=0):
-        if recursion > 50:
-            raise ValueError('Recursion limit reached! Last resource %r' %
-                             (resource,))
+    def rest(self, method, resource, data=None):
+        iteration = 0
+        ret = []
 
-        decoded = super(Unwrap, self).rest(method, resource, data=data)
+        while resource:
+            if iteration >= 50:
+                raise ValueError(
+                    'Iteration %d limit reached! Last resource %r' % (
+                        iteration, resource))
 
-        # DELETE and PUT methods return None.
-        if not decoded:
-            return decoded
+            decoded = super(Unwrap, self).rest(method, resource, data=data)
 
-        # GET/POST methods return a host of different types.
-        data = decoded.pop(u'd', None)
-        if data is None or decoded:
-            raise ValueError('Expected *only* "d" in response, got this: '
-                             'response=%r, d=%r' % (decoded, data))
+            # DELETE and PUT methods return None.
+            if not decoded:
+                assert method in ('DELETE', 'PUT'), method
+                assert iteration == 0, iteration
+                return decoded
 
-        # POST methods return a nice dictionary inside of 'd'.
-        if method == 'POST':
-            return data
+            # GET/POST methods return a host of different types.
+            result_data = decoded.pop(u'd', None)
+            if result_data is None or decoded:
+                raise ValueError(
+                    'Expected *only* "d" in response, got this: '
+                    'response=%r, d=%r' % (decoded, result_data))
 
-        # GET methods...
-        if isinstance(data, dict):
-            ret = self._rest_with_next(data, method, resource, recursion)
+            # POST methods return a nice dictionary inside of 'd'.
+            if method == 'POST':
+                assert iteration == 0, iteration
+                return result_data
 
-        elif isinstance(data, list):
-            ret = data
+            # GET methods...
+            assert method == 'GET'
 
-        else:
-            raise ValueError(
-                'Expected *list* or *dict* in "d", got this: d=%r' % (data,))
+            if isinstance(result_data, dict):
+                result_data, resource = self._rest_to_result_data_and_next(
+                    result_data)
+                ret.extend(result_data)
+
+            elif isinstance(result_data, list):
+                assert iteration == 0, iteration
+                ret = result_data
+                resource = None  # no next
+
+            else:
+                raise ValueError(
+                    'Expected *list* or *dict* in "d", got this: d=%r' % (
+                        result_data,))
+
+            iteration += 1
 
         return ret
 
-    def _rest_with_next(self, result_data, method, resource, recursion):
+    def _rest_to_result_data_and_next(self, result_data):
         results = result_data.pop(u'results', None)
         next_ = result_data.pop(u'__next', None)
         if results is None or result_data:
-            raise ValueError('Expected *only* "results" in "d", got this: '
-                             'd=%r, results=%r' % (result_data, results))
+            raise ValueError(
+                'Expected *only* "results" in "d", got this: '
+                'd=%r, results=%r' % (result_data, results))
 
         ret = results
         assert isinstance(ret, list)
-
-        # If there is more data to fetch, do that.
-        if next_ is not None:
-            if method != 'GET':
-                raise ValueError(
-                    'Got *more* data for non-GET request: '
-                    'method=%s, resource=%r, next=%r, data=%r' %
-                    (method, resource, next_, result_data))
-
-            # TODO: We don't want to use recursion for this, but a nice
-            # forloop which calls super().rest() directly.
-            results = self.rest('GET', next_, recursion=(recursion + 1))
-            ret.extend(results)
-
-        return ret
+        return ret, next_  # next_ is None when at the end

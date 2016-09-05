@@ -1,6 +1,10 @@
 Changes
 -------
 
+* HEAD:
+
+  - Iterate over resultsets instead of using recursion (api.unwrap).
+
 * v0.2.2:
 
   - Correct RST source in CHANGES file. Did not display properly on
