@@ -4,7 +4,7 @@ Helper for invoice resources.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015 Walter Doekes, OSSO B.V.
+Copyright (C) 2015,2016 Walter Doekes, OSSO B.V.
 """
 from .manager import Manager
 
@@ -24,7 +24,8 @@ class Invoices(Manager):
             invoice_dict[u'SalesEntryLines'] = invoicelines_dict
         return invoice_dict
 
-    def filter(self, invoice_number=None, reporting_period=None, **kwargs):
+    def filter(self, invoice_number=None, invoice_number__in=None,
+               reporting_period=None, **kwargs):
         if invoice_number is not None:
             remote_id = self._remote_invoice_number(invoice_number)
             # Filter by our invoice_number.
@@ -36,8 +37,16 @@ class Invoices(Manager):
             #                     'SalesInvoiceLines/Amount,'
             #                     'SalesInvoiceLines/VATAmount')
 
+        if invoice_number__in is not None:
+            # Filter by any of the supplied invoice numbers.
+            remote_filter = []
+            for invoice_number in invoice_number__in:
+                remote_id = self._remote_invoice_number(invoice_number)
+                remote_filter.append(u'YourRef eq %s' % (remote_id,))
+            self._filter_append(kwargs, u'(%s)' % (u' or '.join(remote_filter),))
+
         if reporting_period is not None:
-            # Filter by our invoice_number.
+            # Filter by reporting period.
             self._filter_append(
                 kwargs, u'ReportingYear eq %d' % (reporting_period.year,))
             self._filter_append(
