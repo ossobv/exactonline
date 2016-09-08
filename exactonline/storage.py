@@ -60,6 +60,25 @@ except ImportError:  # python2
             ConfigParserOldStyle.__init__(self, **kwargs)
             super(ConfigParser, self).__init__(**kwargs)
 
+try:
+    unicode
+except NameError:
+    # python3
+    def native_string(value):
+        if isinstance(value, str):
+            return value
+        if isinstance(value, bytes):
+            return value.decode('utf-8')
+        return str(value)
+else:
+    # python2
+    def native_string(value):
+        if isinstance(value, str):
+            return value
+        if isinstance(value, unicode):
+            return value.encode('utf-8')
+        return str(value)
+
 
 # TODO: replace NoOptionError with a custom/own config error?
 # TODO: move the exactonlineconfig base to a separate file one doesn't need to
@@ -67,6 +86,13 @@ except ImportError:  # python2
 
 
 class ExactOnlineConfig(object):
+    """
+    The configuration class.
+
+    The getters all assert that a native-string type is returned (unless
+    a different type is explicitly mentioned). This way the callers
+    won't have to think about what they get.
+    """
     def get_or_set_default(self, section, option, value):
         """
         Base method to fetch values and to set defaults in case they
@@ -87,19 +113,19 @@ class ExactOnlineConfig(object):
     # ; to write your own routines.
 
     def get_auth_url(self):
-        return self.get_or_set_default(
+        return native_string(self.get_or_set_default(
             'server', 'auth_url',
-            'https://start.exactonline.nl/api/oauth2/auth')
+            'https://start.exactonline.nl/api/oauth2/auth'))
 
     def get_rest_url(self):
-        return self.get_or_set_default(
+        return native_string(self.get_or_set_default(
             'server', 'rest_url',
-            'https://start.exactonline.nl/api')
+            'https://start.exactonline.nl/api'))
 
     def get_token_url(self):
-        return self.get_or_set_default(
+        return native_string(self.get_or_set_default(
             'server', 'token_url',
-            'https://start.exactonline.nl/api/oauth2/token')
+            'https://start.exactonline.nl/api/oauth2/token'))
 
     # [application]
     # ; These return something, or raise NoOptionError if they are
@@ -108,13 +134,13 @@ class ExactOnlineConfig(object):
     # ; to write your own routines.
 
     def get_base_url(self):
-        return self.get('application', 'base_url')
+        return native_string(self.get('application', 'base_url'))
 
     def get_client_id(self):
-        return self.get('application', 'client_id')
+        return native_string(self.get('application', 'client_id'))
 
     def get_client_secret(self):
-        return self.get('application', 'client_secret')
+        return native_string(self.get('application', 'client_secret'))
 
     # [transient]
     # ; These return something, or raise NoOptionError if they are
@@ -126,31 +152,31 @@ class ExactOnlineConfig(object):
         return int(self.get('transient', 'access_expiry'))
 
     def set_access_expiry(self, value):
-        self.set('transient', 'access_expiry', str(value))
+        self.set('transient', 'access_expiry', native_string(value))
 
     def get_access_token(self):
-        return self.get('transient', 'access_token')
+        return native_string(self.get('transient', 'access_token'))
 
     def set_access_token(self, value):
-        self.set('transient', 'access_token', value)
+        self.set('transient', 'access_token', native_string(value))
 
     def get_code(self):
-        return self.get('transient', 'code')
+        return native_string(self.get('transient', 'code'))
 
     def set_code(self, value):
-        self.set('transient', 'code', value)
+        self.set('transient', 'code', native_string(value))
 
     def get_division(self):
         return int(self.get('transient', 'division'))
 
     def set_division(self, value):
-        self.set('transient', 'division', str(value))
+        self.set('transient', 'division', native_string(value))
 
     def get_refresh_token(self):
-        return self.get('transient', 'refresh_token')
+        return native_string(self.get('transient', 'refresh_token'))
 
     def set_refresh_token(self, value):
-        self.set('transient', 'refresh_token', value)
+        self.set('transient', 'refresh_token', native_string(value))
 
     # ; aliases
 
@@ -197,6 +223,7 @@ class IniStorage(ExactOnlineConfig, ConfigParser):
             ret = super(ExactOnlineConfig, self).get(section, option, **kwargs)
         except NoSectionError:
             raise NoOptionError(option, section)
+
         return ret
 
     def set(self, section, option, value):

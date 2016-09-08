@@ -32,8 +32,7 @@ class ExactRawApi(object):
                      '&response_type=%(response_type)s' %
                      auth_params)
 
-        url = '?'.join([self.storage.get_auth_url().encode('utf-8'),
-                        auth_data])
+        url = '?'.join([self.storage.get_auth_url(), auth_data])
         return url
 
     def request_token(self, code):
@@ -53,7 +52,7 @@ class ExactRawApi(object):
                       token_params)
 
         # Fire away!
-        url = self.storage.get_token_url().encode('utf-8')
+        url = self.storage.get_token_url()
         response = http_post(url, token_data, opt=opt_secure)
 
         # Validate and store the values.
@@ -79,7 +78,7 @@ class ExactRawApi(object):
                         refresh_params)
 
         # Fire away!
-        url = self.storage.get_refresh_url().encode('utf-8')
+        url = self.storage.get_refresh_url()
         response = http_post(url, refresh_data, opt=opt_secure)
 
         # Validate and store the values.

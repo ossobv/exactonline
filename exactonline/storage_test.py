@@ -157,6 +157,38 @@ class IniStorageTestCase(TestCase):
             except OSError:
                 pass
 
+    def test_get_and_set_must_be_string_types(self):
+        # internals: we want str types inserted into set() and returned
+        # from get(). Needed for clean py23 compatibility.
+        try:
+            self.assertFalse(path.exists('storage-gets-created.ini'))
+            config = IniStorage('storage-gets-created.ini')
+
+            # Test even when writing the inverse of a str, we still get a
+            # native-str type back. For py23 compatibility.
+            byte_string = 'abc'.encode('ascii')
+            if hasattr(byte_string, 'encode'):
+                non_native_string = byte_string.decode('ascii')
+            else:
+                non_native_string = byte_string
+
+            # Store temp value.
+            config.set_access_token(non_native_string)
+            value = config.get_access_token()
+            self.assertEqual(value, 'abc')
+            self.assertEqual(type(value), str)
+
+            # Reload file and check value some more.
+            config = IniStorage('storage-gets-created.ini')
+            value = config.get_access_token()
+            self.assertEqual(value, 'abc')
+            self.assertEqual(type(value), str)
+        finally:
+            try:
+                unlink('storage-gets-created.ini')
+            except OSError:
+                pass
+
 
 if __name__ == '__main__':
     main()

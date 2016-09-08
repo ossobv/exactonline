@@ -5,6 +5,8 @@ Changes
 
   - Add api.invoices.filter(invoice_number__in=LIST) filter.
   - Iterate over resultsets instead of using recursion (api.unwrap).
+  - Fix python3 compatibility issue: bytestring found on autorefresh.
+    Thanks @wpxgit.
 
 * v0.2.2:
 
