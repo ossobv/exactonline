@@ -392,6 +392,7 @@ TODO
 * Add travis build stuff.
 * Fix automatic versioning so we can stop hardcoding the version in
   setup.py.
+* Fix so file Copyright headers are auto-populated (and date-updated).
 
 
 
