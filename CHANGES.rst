@@ -1,7 +1,7 @@
 Changes
 -------
 
-* HEAD:
+* v0.2.3:
 
   - Add api.invoices.filter(invoice_number__in=LIST) filter.
   - Iterate over resultsets instead of using recursion (api.unwrap).
