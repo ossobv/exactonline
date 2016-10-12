@@ -12,7 +12,7 @@ import ssl
 import sys
 
 from os import path
-from unittest import TestCase, skip, skipIf
+from unittest import TestCase, skipIf
 
 from .http import (
     BadProtocol, HTTPError, Options,
@@ -28,7 +28,7 @@ except ImportError:  # python2
 
 class HttpTestServer(object):
     "Super simple builtin HTTP test server."
-    def __init__(self, method, code, body, use_ssl=False):
+    def __init__(self, method, code, body=None, use_ssl=False):
         from multiprocessing import Process
         from socket import socket
 
@@ -65,15 +65,23 @@ class HttpTestServer(object):
             return
 
         data = peersock.recv(4096)
-        if HttpTestCase.to_str(data).startswith(self.method):
+        if HttpTestCase.to_str(data).startswith(self.method + ' '):
+            if self.body is None:
+                # If body is None, pass the indata as outdata.
+                body = data
+                if str != bytes:
+                    body = body.decode('utf-8')
+            else:
+                body = self.body
+
             peersock.send(
-                ('HTTP/1.0 %s Whatever\r\n'
+                ('HTTP/1.0 %s Unused Response Title\r\n'
                  'Content-Type: text/plain; utf-8\r\n'
-                 '\r\n%s' % (self.code, self.body)
+                 '\r\n%s' % (self.code, body)
                  ).encode('utf-8'))
         else:
             peersock.send(
-                ('HTTP/1.0 999 Unexpected stuff\r\n'
+                ('HTTP/1.0 405 Method Not Implemented\r\n'
                  'Content-Type: text/plain; utf-8\r\n'
                  '\r\nUnexpected stuff'
                  ).encode('utf-8'))
@@ -119,9 +127,16 @@ class HttpTestCase(TestCase):
         server.join()
         self.assertDataEqual(data, 'whatever3')
 
-    @skip('still needed: a test that actually checks the posted data')
     def test_post_actual_data(self):
-        self.assertFalse(True)
+        server = HttpTestServer('POST', '200', body=None)  # no body => echo
+        indata = 'abc DEF\nghi JKL\n'
+        data = http_post(
+            'http://127.0.0.1:%d/path' % (server.port,), data=indata)
+        server.join()
+
+        data = data.decode('utf-8')
+        header, outdata = data.split('\r\n\r\n', 1)
+        self.assertEqual(outdata, indata)
 
     def test_put(self):
         server = HttpTestServer('PUT', '200', 'whatever4')
@@ -137,6 +152,22 @@ class HttpTestCase(TestCase):
             self.assertTrue(isinstance(e, request.HTTPError))
             self.assertEqual(e.code, 502)
             self.assertDataEqual(e.response, 'eRrOr')
+        else:
+            self.assertFalse(True)
+        server.join()
+
+    def test_exception_str(self):
+        server = HttpTestServer('POST', '503', '{"errno":1}')
+        url = 'http://127.0.0.1:%d/path' % (server.port,)
+        try:
+            http_post(url, data='{"action":1}')
+        except HTTPError as e:
+            self.assertTrue(isinstance(e, request.HTTPError))
+            error_str = str(e)
+            self.assertIn('503', error_str)
+            self.assertIn(url, error_str)
+            self.assertIn('{"action":1}', error_str)
+            self.assertIn('{"errno":1}', error_str)
         else:
             self.assertFalse(True)
         server.join()

@@ -63,24 +63,51 @@ class BadProtocol(ValueError):
 
 class HTTPError(request.HTTPError):
     """
-    Override the original HTTPError, drop the fp and add a response.
+    Override the original HTTPError, drop the fp and add a response and
+    add request method and data.
     """
-    def __init__(self, url, code, msg, hdrs, response):
+    def __init__(self, url, code, msg, hdrs, response, reqmethod, reqdata):
         request.HTTPError.__init__(self, url, code, msg, hdrs, None)
-        self.response = response
+        self.url = url
+        self.response = response        # in
+        self.reqmethod = reqmethod
+        self.reqdata = reqdata or ''    # out
+
+    @staticmethod
+    def clean_and_trim(value):
+        if not isinstance(value, str):
+            value = value.decode('utf-8', 'replace')
+        value = value[0:1023] + ('', '...')[len(value) > 1023]
+        value = ''.join(
+            ('?', i)[0x20 <= ord(i) <= 0x7F or i in '\t\n\r'] for i in value)
+        return value
+
+    def get_content_type(self):
+        try:
+            # self.hdrs is a ???
+            type_ = str(self.hdrs.type)
+        except AttributeError:
+            # self.hdrs is a HTTPMessage
+            type_ = '|'.join(
+                i[1] for i in self.hdrs.items()
+                if i[0].lower() == 'content-type')
+        return type_
+
+    def format_req(self):
+        return '%s %s\nContent-Length: %s\n\n%s' % (
+            self.reqmethod, self.url, len(self.reqdata),
+            self.clean_and_trim(self.reqdata))
+
+    def format_resp(self):
+        return '<RESP> %s %s\nContent-Type: %s\nContent-Length: %s\n\n%s' % (
+            self.code, self.msg, self.get_content_type(), len(self.response),
+            self.clean_and_trim(self.response))
 
     def __str__(self):
-        if not isinstance(self.response, str):
-            response = self.response.decode('utf-8', 'replace')
-        else:
-            response = self.response
-        response = response[0:512] + ('', '...')[len(response) > 512]
-        response = ''.join(('?', i)[0x20 <= ord(i) <= 0x7F or i in '\t\n\r']
-                           for i in response)
-        return ('HTTPError: """%s %s\nContent-Type: %s\n'
-                'Content-Length: %d\n\n%s"""' %
-                (self.code, self.msg, self.hdrs.type, len(self.response),
-                 response))
+        return (
+            'HTTPError: %(msg)s%(sep)s\n%(out)s%(sep)s\n%(in)s%(sep)s' % {
+                'msg': self.msg, 'out': self.format_req(),
+                'in': self.format_resp(), 'sep': '\n' + ('-' * 71)})
 
 
 class Options(object):
@@ -204,49 +231,47 @@ class ValidHTTPSHandler(request.HTTPSHandler):
 
 
 def http_delete(url, opt=opt_default):
-    '''
-    Shortcut for urlopen (GET) + read. We'll probably want to add a nice
-    timeout here later too.
-    '''
+    """
+    Shortcut for urlopen (DELETE) + read. We'll probably want to add a
+    nice timeout here later too.
+    """
     return _http_request(url, method='DELETE', opt=opt)
 
 
 def http_get(url, opt=opt_default):
-    '''
+    """
     Shortcut for urlopen (GET) + read. We'll probably want to add a nice
     timeout here later too.
-    '''
+    """
     return _http_request(url, method='GET', opt=opt)
 
 
 def http_post(url, data=None, opt=opt_default):
-    '''
+    """
     Shortcut for urlopen (POST) + read. We'll probably want to add a
     nice timeout here later too.
-    '''
-    if isinstance(data, str):
-        # Allow binstrings for data.
-        pass
-    elif data:
-        data = urllib.urlencode(data)
-    else:
-        data = ''.encode('utf-8')  # ensure POST-mode
-    return _http_request(url, method='POST', data=data, opt=opt)
+    """
+    return _http_request(url, method='POST', data=_marshalled(data), opt=opt)
 
 
 def http_put(url, data=None, opt=opt_default):
-    '''
-    Shortcut for urlopen (PUT) + read. We'll probably want to add a
-    nice timeout here later too.
-    '''
-    if isinstance(data, str):
-        # Allow binstrings for data.
+    """
+    Shortcut for urlopen (PUT) + read. We'll probably want to add a nice
+    timeout here later too.
+    """
+    return _http_request(url, method='PUT', data=_marshalled(data), opt=opt)
+
+
+def _marshalled(data):
+    if not data:
+        data = ''.encode('utf-8')  # ensure PUT/POST-mode
+    elif isinstance(data, type(u'')):
+        data = data.encode('utf-8')
+    elif isinstance(data, (bytes, str)):
         pass
-    elif data:
-        data = urllib.urlencode(data)
     else:
-        data = ''.encode('utf-8')  # ensure POST-mode
-    return _http_request(url, method='PUT', data=data, opt=opt)
+        data = urllib.urlencode(data)
+    return data
 
 
 def _http_request(url, method=None, data=None, opt=None):
@@ -297,8 +322,9 @@ def _http_request(url, method=None, data=None, opt=None):
                     exc_info[1].code,
                     exc_info[1].msg,
                     exc_info[1].hdrs,
-                    response
-                )
+                    response,
+                    method or '(none)',
+                    data)
             fp.close()
 
     if exc_info:
