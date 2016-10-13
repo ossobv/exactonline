@@ -3,6 +3,10 @@ Changes
 
 * vHEAD:
 
+  - ...
+
+* v0.2.4:
+
   - Improve HTTP functions for better error reporting and better Py23
     compatibility.
 
