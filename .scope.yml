@@ -1,0 +1,16 @@
+# https://bettercodehub.com
+
+# Search for project directories in the exactonline subdir (level 2).
+component_depth: 2
+
+languages:
+  - name: python
+
+    production:
+      exclude:
+        - /setup.py
+        - .*_test.py
+
+    test:
+      include:
+        - .*_test.py
