@@ -10,21 +10,21 @@ Copyright (C) 2015-2016 Walter Doekes, OSSO B.V.
 
 
 class Unwrap(object):
-    def rest(self, method, resource, data=None):
+    def rest(self, request):
         iteration = 0
         ret = []
 
-        while resource:
+        while request:
             if iteration >= 50:
                 raise ValueError(
                     'Iteration %d limit reached! Last resource %r' % (
-                        iteration, resource))
+                        iteration, request.resource))
 
-            decoded = super(Unwrap, self).rest(method, resource, data=data)
+            decoded = super(Unwrap, self).rest(request)
 
             # DELETE and PUT methods return None.
             if not decoded:
-                assert method in ('DELETE', 'PUT'), method
+                assert request.method in ('DELETE', 'PUT'), request.method
                 assert iteration == 0, iteration
                 return decoded
 
@@ -36,23 +36,27 @@ class Unwrap(object):
                     'response=%r, d=%r' % (decoded, result_data))
 
             # POST methods return a nice dictionary inside of 'd'.
-            if method == 'POST':
+            if request.method == 'POST':
                 assert iteration == 0, iteration
                 return result_data
 
             # GET methods...
-            assert method == 'GET'
+            assert request.method == 'GET'
 
             if isinstance(result_data, dict):
                 result_data, resource = self._rest_to_result_data_and_next(
                     result_data)
                 ret.extend(result_data)
 
+                if resource:
+                    request = request.update(resource=resource)  # next request
+                else:
+                    request = None  # no next
+
             elif isinstance(result_data, list):
                 assert iteration == 0, iteration
                 ret = result_data
-                resource = None  # no next
-
+                request = None  # no next
             else:
                 raise ValueError(
                     'Expected *list* or *dict* in "d", got this: d=%r' % (

@@ -25,6 +25,7 @@ Copyright (C) 2015 Walter Doekes, OSSO B.V.
 """
 from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
+from ..resource import DELETE, POST
 
 
 class UnknownLedgerCodes(ExactOnlineError):
@@ -201,13 +202,12 @@ class ExactInvoice(ExactElement):
             new_salesentrylines = data.pop('SalesEntryLines')
             for line in new_salesentrylines:
                 line['EntryID'] = exact_guid
-                self._api.restv1('POST', 'salesentry/SalesEntryLines', line)
+                self._api.restv1(POST('salesentry/SalesEntryLines', line))
 
             # Remove old.
             for line in old_salesentrylines:
-                self._api.restv1(
-                    'DELETE', ("salesentry/SalesEntryLines(guid'%s')" %
-                               line['ID']))
+                self._api.restv1(DELETE(
+                    "salesentry/SalesEntryLines(guid'%s')" % line['ID']))
 
             # Update the invoice (without the SalesEntryLines).
             ret = self._api.invoices.update(exact_guid, data)

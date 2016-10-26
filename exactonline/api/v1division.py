@@ -8,6 +8,7 @@ Copyright (C) 2015 Walter Doekes, OSSO B.V.
 """
 from ..exceptions import ExactOnlineError
 from ..http import urljoin
+from ..resource import GET
 from ..storage import NoOptionError
 
 
@@ -16,7 +17,7 @@ class V1DivisionError(ExactOnlineError):
 
 
 class V1Division(object):
-    def restv1(self, method, resource, data=None):
+    def restv1(self, request):
         try:
             division = self.storage.get_division()
         except NoOptionError:
@@ -25,21 +26,21 @@ class V1Division(object):
             raise V1DivisionError('Division unset/blank in config')
 
         urlbase = 'v1/%d/' % (division,)
-        resource = urljoin(urlbase, resource)
-        return self.rest(method, resource, data=data)
+        request = request.update(resource=urljoin(urlbase, request.resource))
+        return self.rest(request)
 
     def get_divisions(self):
         """
         Get the "current" division and return a dictionary of divisions
         so the user can select the right one.
         """
-        ret = self.rest('GET', 'v1/current/Me?$select=CurrentDivision')
+        ret = self.rest(GET('v1/current/Me?$select=CurrentDivision'))
         current_division = ret[0]['CurrentDivision']
         assert isinstance(current_division, int)
 
         urlbase = 'v1/%d/' % (current_division,)
         resource = urljoin(urlbase, 'hrm/Divisions?$select=Code,Description')
-        ret = self.rest('GET', resource)
+        ret = self.rest(GET(resource))
 
         choices = dict((i['Code'], i['Description']) for i in ret)
         return choices, current_division
@@ -59,7 +60,7 @@ class V1Division(object):
             urlbase,
             "crm/Accounts?$select=ID&$filter=Name+eq+'DOES_NOT_EXIST'")
         try:
-            self.rest('GET', resource)
+            self.rest(GET(resource))
         except AssertionError:
             raise V1DivisionError('Invalid division %r according to server' %
                                   (division,))

@@ -10,9 +10,9 @@ from ..http import HTTPError
 
 
 class Autorefresh(object):
-    def rest(self, method, resource, data=None):
+    def rest(self, request):
         try:
-            decoded = super(Autorefresh, self).rest(method, resource, data=data)
+            decoded = super(Autorefresh, self).rest(request)
         except HTTPError as e:
             if e.code != 401:
                 raise
@@ -21,6 +21,6 @@ class Autorefresh(object):
             self.refresh_token()
 
             # Retry.
-            decoded = super(Autorefresh, self).rest(method, resource, data=data)
+            decoded = super(Autorefresh, self).rest(request)
 
         return decoded
