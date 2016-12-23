@@ -102,6 +102,14 @@ class ExactRawApi(object):
 
         response = self._rest_query(method, url, data)
 
+        if not hasattr(response, 'encode'):
+            try:
+                response = response.decode('utf-8')
+            except UnicodeDecodeError:
+                raise ValueError('Expected valid JSON encoding for %s '
+                                 'operation: resource=%r, returned=%r' %
+                                 (method, resource, response))
+
         if method in ('DELETE', 'PUT'):
             if response != '':
                 raise ValueError('Expected empty data for %s operation: '
@@ -109,15 +117,6 @@ class ExactRawApi(object):
                                  (method, resource, response))
             decoded = None
         else:
-            if not hasattr(response, 'encode'):
-                # Python3: json.loads() wants an unistr.
-                try:
-                    response = response.decode('utf-8')
-                except UnicodeDecodeError:
-                    raise ValueError('Expected valid JSON encoding for %s '
-                                     'operation: resource=%r, returned=%r' %
-                                     (method, resource, response))
-
             try:
                 decoded = json.loads(response)
             except ValueError:
