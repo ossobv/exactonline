@@ -1,9 +1,20 @@
 Changes
 -------
 
-* v0.2.HEAD:
+* v0.3.HEAD:
 
-  - ...
+  - Refactor code to use fewer arguments. This makes the BetterCodeHub
+    checks happy and that makes me happy. This is a BACKWARDS
+    INCOMPATIBLE CHANGE. All your code that looked like this::
+
+        ret = self.rest('GET', 'v1/current/Me?$select=CurrentDivision')
+
+    will have to be changed to this::
+
+        from exactonline.resource import GET
+        ret = self.rest(GET('v1/current/Me?$select=CurrentDivision'))
+
+    Closes #7.
 
 * v0.2.5:
 
