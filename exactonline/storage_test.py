@@ -4,7 +4,7 @@ Provides a storage class to the Exact Online REST API Library.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 
 Usage:
 
@@ -97,6 +97,7 @@ class IniStorageTestCase(TestCase):
     def test_application_no_defaults(self):
         config = IniStorage(StringIO())
         self.assertRaises(NoOptionError, config.get_base_url)
+        self.assertRaises(NoOptionError, config.get_response_url)  # same..
         self.assertRaises(NoOptionError, config.get_client_id)
         self.assertRaises(NoOptionError, config.get_client_secret)
 
@@ -122,6 +123,7 @@ class IniStorageTestCase(TestCase):
 
         # [application]
         self.assertEqual(config.get_base_url(), 'https://example.com')
+        self.assertEqual(config.get_response_url(), 'https://example.com')
         self.assertEqual(config.get_client_id(),
                          '{12345678-abcd-1234-abcd-0123456789ab}')
         self.assertEqual(config.get_client_secret(), 'ZZZ999xxx000')

@@ -3,7 +3,9 @@ Changes
 
 * v0.2.HEAD:
 
-  - ...
+  - Add IniStorage default return value for get_default_url(), returning
+    get_base_url(). This makes life easier for those who did not read
+    the README. Closes #6.
 
 * v0.2.5:
 
