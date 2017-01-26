@@ -32,6 +32,7 @@ Set up the basics:
 
     from exactonline.api import ExactApi
     from exactonline.exceptions import ObjectDoesNotExist
+    from exactonline.resource import GET, POST, PUT, DELETE
     from exactonline.storage import IniStorage
 
     # Create a function to get the api with your own storage backend.
@@ -299,25 +300,25 @@ following two three are equivalent:
 .. code-block:: python
 
     api.relations.all()
-    api.restv1('GET', 'crm/Accounts')
-    api.rest('GET', 'v1/%d/crm/Accounts' % selected_division)
+    api.restv1(GET('crm/Accounts'))
+    api.rest(GET('v1/%d/crm/Accounts' % selected_division))
 
 As are the following three:
 
 .. code-block:: python
 
     api.relations.filter(top=2)
-    api.restv1('GET', 'crm/Accounts?$top=2')
-    api.rest('GET', 'v1/%d/crm/Accounts?$top=2' % selected_division)
+    api.restv1(GET('crm/Accounts?$top=2'))
+    api.rest(GET('v1/%d/crm/Accounts?$top=2' % selected_division))
 
 And these:
 
 .. code-block:: python
 
     api.invoices.filter(filter="EntryDate gt datetime'2015-01-01'")
-    api.restv1('GET', 'salesentry/SalesEntries?' +
-      '$filter=EntryDate%20gt%20datetime%272015-01-01%27')
-    api.rest('GET', 'v1/%d/salesentry/SalesEntries?' +
+    api.restv1(GET('salesentry/SalesEntries?' +
+      '$filter=EntryDate%20gt%20datetime%272015-01-01%27'))
+    api.rest(GET('v1/%d/salesentry/SalesEntries?' +
       '$filter=EntryDate%%20gt%%20datetime%%272015-01-01%%27' %
       selected_division)
     # convinced yet that the helpers are useful?

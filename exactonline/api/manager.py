@@ -4,10 +4,11 @@ Base manager class for resource helpers.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 """
 from ..exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from ..http import binquote
+from ..resource import DELETE, GET, POST, PUT
 
 
 # Python23 compatibility helpers
@@ -78,13 +79,13 @@ class Manager(object):
         else:
             args = ''
 
-        ret = self._api.restv1('GET', self.resource + args)
+        ret = self._api.restv1(GET(self.resource + args))
         return ret
 
     # == POST / create ==
 
     def create(self, element_dict):
-        ret = self._api.restv1('POST', str(self.resource), element_dict)
+        ret = self._api.restv1(POST(str(self.resource), element_dict))
         return ret
 
     # == DELETE / remove ==
@@ -92,7 +93,7 @@ class Manager(object):
     def delete(self, remote_guid):
         remote_id = self._remote_guid(remote_guid)
         uri = '%s(%s)' % (self.resource, remote_id)
-        ret = self._api.restv1('DELETE', str(uri))
+        ret = self._api.restv1(DELETE(str(uri)))
         return ret
 
     # == PUT / update ==
@@ -100,7 +101,7 @@ class Manager(object):
     def update(self, remote_guid, element_dict):
         remote_id = self._remote_guid(remote_guid)
         uri = '%s(%s)' % (self.resource, remote_id)
-        ret = self._api.restv1('PUT', str(uri), element_dict)
+        ret = self._api.restv1(PUT(str(uri), element_dict))
         return ret
 
     # == helpers ==

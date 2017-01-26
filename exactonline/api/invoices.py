@@ -4,9 +4,10 @@ Helper for invoice resources.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015-2016 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 """
 from .manager import Manager
+from ..resource import GET
 
 
 class Invoices(Manager):
@@ -20,7 +21,7 @@ class Invoices(Manager):
             # Perhaps there is a 'select' filter.
             pass
         else:
-            invoicelines_dict = self._api.restv1('GET', str(uri))
+            invoicelines_dict = self._api.restv1(GET(str(uri)))
             invoice_dict[u'SalesEntryLines'] = invoicelines_dict
         return invoice_dict
 
@@ -43,7 +44,8 @@ class Invoices(Manager):
             for invoice_number in invoice_number__in:
                 remote_id = self._remote_invoice_number(invoice_number)
                 remote_filter.append(u'YourRef eq %s' % (remote_id,))
-            self._filter_append(kwargs, u'(%s)' % (u' or '.join(remote_filter),))
+            self._filter_append(
+                kwargs, u'(%s)' % (u' or '.join(remote_filter),))
 
         if reporting_period is not None:
             # Filter by reporting period.

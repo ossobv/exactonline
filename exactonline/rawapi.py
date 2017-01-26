@@ -4,7 +4,7 @@ Base API interface.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015-2016 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 """
 import json
 
@@ -102,58 +102,64 @@ class ExactRawApi(object):
     #
     # See this for a list of possible resources.
     # https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
-    def rest(self, method, resource, data=None):
-        url = urljoin(self.storage.get_rest_url().rstrip('/') + '/', resource)
+    def rest(self, request):
+        url = urljoin(
+            self.storage.get_rest_url().rstrip('/') + '/', request.resource)
 
         # Convert data to json.
-        if data is None:
-            pass
-        elif isinstance(data, str):
-            pass
+        if request.data is None:
+            data = None
+        elif isinstance(request.data, str):
+            data = request.data
         else:
             data = json.dumps(data)
 
-        response = self._rest_query(method, url, data)
+        new_request = request.update(resource=url, data=data)
+        response = self._rest_query(new_request)
 
-        if method in ('DELETE', 'PUT'):
+        if request.method in ('DELETE', 'PUT'):
             if response != '':
-                raise ValueError('Expected empty data for %s operation: '
-                                 'resource=%r, returned=%r' %
-                                 (method, resource, response))
+                raise ValueError(
+                    'Expected empty data for %s operation: '
+                    'resource=%r, returned=%r' % (
+                        request.method, request.resource, response))
             decoded = None
         else:
             try:
                 decoded = json.loads(response)
             except ValueError:
-                raise ValueError('Expected valid JSON data for %s operation: '
-                                 'resource=%r, returned=%r' %
-                                 (method, resource, response))
+                raise ValueError(
+                    'Expected valid JSON data for %s operation: '
+                    'resource=%r, returned=%r' % (
+                        request.method, request.resource, response))
 
         return decoded
 
-    def _rest_query(self, method, url, data):
+    def _rest_query(self, request):
         token = self.storage.get_access_token()
         opt_custom = Options()
         opt_custom.headers = {
             'Accept': 'application/json',
             'Authorization': 'Bearer %s' % (token,),
         }
-        if method in ('POST', 'PUT'):
+        if request.method in ('POST', 'PUT'):
             opt_custom.headers.update({'Content-Type': 'application/json'})
+        opt = (opt_secure | opt_custom)
 
-        if method == 'DELETE':
-            assert data is None
-            response = http_delete(url, opt=(opt_secure | opt_custom))
-        elif method == 'GET':
-            assert data is None
-            response = http_get(url, opt=(opt_secure | opt_custom))
-        elif method == 'POST':
-            response = http_post(url, data, opt=(opt_secure | opt_custom))
-        elif method == 'PUT':
-            response = http_put(url, data, opt=(opt_secure | opt_custom))
+        if request.method == 'DELETE':
+            assert request.data is None
+            response = http_delete(request.resource, opt=opt)
+        elif request.method == 'GET':
+            assert request.data is None
+            response = http_get(request.resource, opt=opt)
+        elif request.method == 'POST':
+            response = http_post(request.resource, request.data, opt=opt)
+        elif request.method == 'PUT':
+            response = http_put(request.resource, request.data, opt=opt)
         else:
-            raise NotImplementedError('No REST handler for method %s' %
-                                      (method,))
+            raise NotImplementedError(
+                'No REST handler for request.method %s' % (
+                    request.method,))
 
         return _json_safe(response)
 
