@@ -391,7 +391,6 @@ TODO
 
 * Right now, the section-links in the README.rst do not work in PyPI:
   the quick jump links fail to emerge.
-* Replace base_url with response_url?
 * Add travis build stuff.
 * Fix automatic versioning so we can stop hardcoding the version in
   setup.py.

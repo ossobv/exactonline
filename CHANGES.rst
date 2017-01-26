@@ -16,6 +16,10 @@ Changes
 
     Closes #7.
 
+  - Add IniStorage default return value for get_default_url(), returning
+    get_base_url(). This makes life easier for those who did not read
+    the README. Closes #6.
+
 * v0.2.5:
 
   - Fix set_tokens() bug in Python3; make sure json.loads() gets an

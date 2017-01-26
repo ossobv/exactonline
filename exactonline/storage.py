@@ -4,7 +4,7 @@ Provides a storage class to the Exact Online REST API Library.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015-2016 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 
 Usage:
 
@@ -135,6 +135,16 @@ class ExactOnlineConfig(object):
 
     def get_base_url(self):
         return native_string(self.get('application', 'base_url'))
+
+    def get_response_url(self):
+        """
+        Get a default value for get_response_url() where the user is
+        redirected back to after the OAuth step on the ExactOnline site.
+
+        You'll probably want to subclass this method to return a more
+        specific location.
+        """
+        return self.get_base_url()
 
     def get_client_id(self):
         return native_string(self.get('application', 'client_id'))
