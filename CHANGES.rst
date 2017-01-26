@@ -1,7 +1,7 @@
 Changes
 -------
 
-* v0.3.HEAD:
+* v0.3.0:
 
   - Refactor code to use fewer arguments. This makes the BetterCodeHub
     checks happy and that makes me happy. This is a BACKWARDS

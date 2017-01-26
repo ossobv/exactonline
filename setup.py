@@ -10,7 +10,7 @@ if __name__ == '__main__':
 
     setup(
         name='exactonline',
-        version='v0.2.HEAD',
+        version='0.3.0',
         packages=['exactonline', 'exactonline.api', 'exactonline.elements'],
         data_files=[('', ['LICENSE.txt', 'README.rst', 'CHANGES.rst'])],
         description='Exact Online REST API Library in Python',
