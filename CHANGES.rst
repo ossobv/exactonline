@@ -1,7 +1,7 @@
 Changes
 -------
 
-* vHEAD:
+* v0.2.5:
 
   - Fix set_tokens() bug in Python3; make sure json.loads() gets an
     unistr. Reported by @Imperatus, @LordGaav. Closes #9 and #10.
