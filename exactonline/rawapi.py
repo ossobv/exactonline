@@ -15,6 +15,19 @@ from .http import (
     binquote, urljoin)
 
 
+def _json_safe(data):
+    """
+    json.loads wants an unistr in Python3. Convert it.
+    """
+    if not hasattr(data, 'encode'):
+        try:
+            data = data.decode('utf-8')
+        except UnicodeDecodeError:
+            raise ValueError(
+                'Expected valid UTF8 for JSON data, got %r' % (data,))
+    return data
+
+
 class ExactRawApi(object):
     def __init__(self, storage, **kwargs):
         super(ExactRawApi, self).__init__(**kwargs)
@@ -53,7 +66,7 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_token_url()
-        response = http_post(url, token_data, opt=opt_secure)
+        response = _json_safe(http_post(url, token_data, opt=opt_secure))
 
         # Validate and store the values.
         self._set_tokens(response)
@@ -79,7 +92,7 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_refresh_url()
-        response = http_post(url, refresh_data, opt=opt_secure)
+        response = _json_safe(http_post(url, refresh_data, opt=opt_secure))
 
         # Validate and store the values.
         self._set_tokens(response)
@@ -109,15 +122,6 @@ class ExactRawApi(object):
                                  (method, resource, response))
             decoded = None
         else:
-            if not hasattr(response, 'encode'):
-                # Python3: json.loads() wants an unistr.
-                try:
-                    response = response.decode('utf-8')
-                except UnicodeDecodeError:
-                    raise ValueError('Expected valid JSON encoding for %s '
-                                     'operation: resource=%r, returned=%r' %
-                                     (method, resource, response))
-
             try:
                 decoded = json.loads(response)
             except ValueError:
@@ -150,7 +154,8 @@ class ExactRawApi(object):
         else:
             raise NotImplementedError('No REST handler for method %s' %
                                       (method,))
-        return response
+
+        return _json_safe(response)
 
     def _set_tokens(self, jsondata):
         # The json should look somewhat like this:
