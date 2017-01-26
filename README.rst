@@ -288,6 +288,7 @@ Currently, it looks like this:
 
 .. code-block:: python
 
+    contacts = Contacts.as_property()
     invoices = Invoices.as_property()
     ledgeraccounts = LedgerAccounts.as_property()
     receivables = Receivables.as_property()
