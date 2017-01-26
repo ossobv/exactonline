@@ -4,7 +4,7 @@ Resource request methods.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2016 Walter Doekes, OSSO B.V.
+Copyright (C) 2016-2017 Walter Doekes, OSSO B.V.
 """
 
 

@@ -32,6 +32,7 @@ Set up the basics:
 
     from exactonline.api import ExactApi
     from exactonline.exceptions import ObjectDoesNotExist
+    from exactonline.resource import GET, POST, PUT, DELETE
     from exactonline.storage import IniStorage
 
     # Create a function to get the api with your own storage backend.
