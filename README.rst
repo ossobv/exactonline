@@ -391,8 +391,6 @@ version 3 or any later version.
 TODO
 ----
 
-* Right now, the section-links in the README.rst do not work in PyPI:
-  the quick jump links fail to emerge.
 * Fix so file Copyright headers are auto-populated (and date-updated).
 
 
