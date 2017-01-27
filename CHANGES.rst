@@ -1,6 +1,10 @@
 Changes
 -------
 
+* v0.3.HEAD:
+
+  - Add Contacts API support. Thanks @Imperatus. Closes #8 and #11.
+
 * v0.3.0:
 
   - Refactor code to use fewer arguments. This makes the BetterCodeHub
