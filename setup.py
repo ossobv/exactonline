@@ -5,12 +5,18 @@ if __name__ == '__main__':
     long_descriptions = []
     with open('README.rst') as file:
         long_descriptions.append(file.read())
+
     with open('CHANGES.rst') as file:
         long_descriptions.append(file.read())
+        version = long_descriptions[-1].split(':', 1)[0].split('* ', 1)[1]
+        assert version.startswith('v'), version
+        version = version[1:]
+        if not all(i.isdigit() for i in version.split('.')):
+            version = 'UNDEF'  # undefined version
 
     setup(
         name='exactonline',
-        version='HEAD',
+        version=version,
         packages=['exactonline', 'exactonline.api', 'exactonline.elements'],
         data_files=[('', ['LICENSE.txt', 'README.rst', 'CHANGES.rst'])],
         description='Exact Online REST API Library in Python',
