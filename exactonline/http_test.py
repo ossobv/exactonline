@@ -11,7 +11,7 @@ We may want to replace this with something simpler.
 import ssl
 import sys
 
-from os import path
+from os import environ, path
 from unittest import TestCase, skipIf
 
 from .http import (
@@ -187,6 +187,8 @@ class HttpTestCase(TestCase):
         server.join()
         self.assertDataEqual(data, 'ssl')
 
+    @skipIf(environ.get('NO_EXTERNAL_REQUESTS', '') not in ('', '0'),
+            'Calls external services. Do not run automatically.')
     def test_https_with_real_secure(self):
         # This should work with a proper certificate.
         data = http_get('https://api.github.com/', opt=opt_secure)
@@ -212,6 +214,8 @@ class HttpTestCase(TestCase):
         server.join()
         self.assertDataEqual(data, 'ssl2')
 
+    @skipIf(environ.get('NO_EXTERNAL_REQUESTS', '') not in ('', '0'),
+            'Calls external services. Do not run automatically.')
     def test_https_with_disallowed_real_secure(self):
         # This should fail because we use a custom cacert file which won't
         # contain the real cert.
