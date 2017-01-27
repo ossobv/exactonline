@@ -1,6 +1,10 @@
 Changes
 -------
 
+* v0.3.HEAD:
+
+  - ...
+
 * v0.3.1:
 
   - Add Contacts API support. Thanks @Imperatus. Closes #8 and #11.
