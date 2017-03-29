@@ -30,8 +30,9 @@ class HttpTestServer(object):
     "Super simple builtin HTTP test server."
     def __init__(self, method, code, body=None, use_ssl=False):
         from multiprocessing import Process
-        from socket import socket
+        from socket import socket, SHUT_RDWR
 
+        self.SHUT_RDWR = SHUT_RDWR
         self.method = method
         self.code = code
         self.body = body
@@ -85,6 +86,7 @@ class HttpTestServer(object):
                  'Content-Type: text/plain; utf-8\r\n'
                  '\r\nUnexpected stuff'
                  ).encode('utf-8'))
+        peersock.shutdown(self.SHUT_RDWR)
         peersock.close()
         self.socket.close()  # server is done with it
 
