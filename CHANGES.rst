@@ -3,6 +3,7 @@ Changes
 
 * v0.3.HEAD:
 
+  - Fix ConfigParser deprecationwarning.
   - ...
 
 * v0.3.1:

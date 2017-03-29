@@ -214,7 +214,7 @@ class IniStorage(ExactOnlineConfig, ConfigParser):
                 self.readfp(filename_or_fp)  # python<3.2
             self.overwrite = False
         else:
-            self.read(filename_or_fp)
+            self.read([filename_or_fp])
             self.overwrite = filename_or_fp
 
     def get(self, section, option, **kwargs):
