@@ -1,10 +1,11 @@
 Changes
 -------
 
-* v0.3.HEAD:
+* v0.3.2:
 
   - Fix ConfigParser deprecationwarning.
-  - ...
+  - Add VatCodes API support. Thanks Stani Michiels (@stanim). Closes
+    #12.
 
 * v0.3.1:
 
