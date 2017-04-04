@@ -295,6 +295,7 @@ Currently, it looks like this:
     ledgeraccounts = LedgerAccounts.as_property()
     receivables = Receivables.as_property()
     relations = Relations.as_property()
+    vatcodes = VatCodes.as_property()
 
 But you can call resources which don't have a helper directly. The
 following two three are equivalent:
