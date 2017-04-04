@@ -1,6 +1,10 @@
 Changes
 -------
 
+* v0.3.HEAD:
+
+  - ...more...
+
 * v0.3.2:
 
   - Fix ConfigParser deprecationwarning.
