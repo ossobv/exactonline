@@ -367,7 +367,7 @@ you must now create one through the App Center.
     select Manage subscription.
 
 Log into the `Exact Online App Center`_, click MANAGE APPS (APPS BEHEREN);
-it should be a large links visible on the Top Right. Make sure the redirect
+it should be a large link visible on the Top Right. Make sure the redirect
 URI has the same transport+domainname as the site that you wish to connect.
 
 For sites with an internal URI only, you may need to alter the hostname
