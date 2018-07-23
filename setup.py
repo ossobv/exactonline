@@ -11,8 +11,6 @@ if __name__ == '__main__':
         version = long_descriptions[-1].split(':', 1)[0].split('* ', 1)[1]
         assert version.startswith('v'), version
         version = version[1:]
-        if not all(i.isdigit() for i in version.split('.')):
-            version = 'UNDEF'  # undefined version
 
     setup(
         name='exactonline',
