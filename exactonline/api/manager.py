@@ -114,7 +114,7 @@ class Manager(object):
             kwargs['filter'] = extra_filter
 
     def _remote_datetime(self, remote_datetime):
-        return "datetime'%s'" % (remote_datetime.strftime('%Y-%m-%d'),)
+        return remote_datetime.strftime("datetime'%Y-%m-%d'")
 
     def _remote_guid(self, remote_guid):
         return "guid'%s'" % (remote_guid,)
