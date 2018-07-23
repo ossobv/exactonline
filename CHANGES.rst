@@ -1,9 +1,12 @@
 Changes
 -------
 
-* v0.3.HEAD:
+* v0.3.3:
 
-  - ...more...
+  - Additions to ExactInvoice element:
+    + Add optional "month" to get_ledger_lines() for accrued/deferred
+      income.
+    + Add get_vatcode_for_ledger_line() for customizable VATCodes.
 
 * v0.3.2:
 
