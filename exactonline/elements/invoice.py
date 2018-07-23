@@ -42,16 +42,26 @@ class ExactInvoice(ExactElement):
         return exact_invoice['EntryID']
 
     def get_customer(self):
-        # The ExactOnline customer id.
+        """
+        Return ExactCustomer instance for this invoice.
+        """
         raise NotImplementedError()
 
     def get_created_date(self):
-        # Period used for both EntryDate and ReportingPeriod. Use the
-        # "open_date" if available.
+        """
+        Return the invoice period, a date which is used for both the EntryDate
+        and ReportingPeriod.
+
+        Generally, this is the date the invoice was created on.
+        """
         return NotImplementedError()
 
     def get_exact_journal(self):
-        # E.g. "70" for "Verkoopboek"
+        """
+        Return the Journal identifier.
+
+        Generally, this is "70" for "Verkoopboek".
+        """
         raise NotImplementedError()
 
     def get_ledger_code_to_guid_map(self, codes):
@@ -77,26 +87,50 @@ class ExactInvoice(ExactElement):
         return {}
 
     def get_ledger_lines(self):
-        # Return a bunch of ledger lines, like this:
-        # {'code': '1234',          # ledger code
-        #  'vat_percentage': '21',  # 21%
-        #  'total_amount_excl_vat': Decimal(12.5),
-        #  'description': '200 items of foo bar'}
+        """
+        Return a ledger lines for this invoice.
+
+        For example, an iterable(!) of one or more of these:
+
+            {
+                'code': '1234',          # ledger code
+                'vat_percentage': '21',  # 21%
+                'total_amount_excl_vat': Decimal(12.5),
+                'description': '200 items of foo bar',
+            }
+        """
         raise NotImplementedError()
 
     def get_invoice_number(self):
+        """
+        Return your own invoice number; YourRef.
+        """
         raise NotImplementedError()
 
     def get_total_amount_incl_vat(self):
-        # Used in AmountDC (default currency) and AmountFC (foreign
-        # currency).
+        """
+        Return the total amount including VAT.
+
+        This is used in AmountDC (default currency) and AmountFC
+        (foreign currency).
+        """
         raise NotImplementedError()
 
     def get_total_vat(self):
+        """
+        Return the total VAT amount.
+        """
         raise NotImplementedError()
 
     def hint_exact_invoice_number(self):
-        # Exact does not honor all requests.
+        """
+        Return invoice number you suggest ExactOnline will use for the
+        invoice.
+
+        This suggestion may be silently ignored if ExactOnline deems
+        that the value is wrong. (E.g. because it's decrementing or
+        duplicate.)
+        """
         raise NotImplementedError()
 
     def assemble(self):
