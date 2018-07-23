@@ -23,6 +23,8 @@ This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
 Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 """
+from datetime import timedelta
+
 from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
 from ..resource import DELETE, POST
@@ -97,6 +99,15 @@ class ExactInvoice(ExactElement):
                 'vat_percentage': '21',  # 21%
                 'total_amount_excl_vat': Decimal(12.5),
                 'description': '200 items of foo bar',
+
+                # Optional, for accrued/deferred revenue, when the billable
+                # concerns a different date/period than the invoice.
+                # E.g. when you're billing on July 1st for work done in June
+                # (accrued revenue).
+                # Or if you're billing a July subscription in advance on a
+                # June 30st invoice (deferred revenue, "Uitgestelde omzet").
+                'month': date(2018, 7, 1),
+                # ^^ becomes: from=date(2018, 7, 1), to=date(2018, 7, 31)
             }
         """
         raise NotImplementedError()
@@ -221,25 +232,39 @@ class ExactInvoice(ExactElement):
         ret = []
 
         # Fetch ledger lines.
-        ledger_lines = self.get_ledger_lines()
+        ledger_lines = list(self.get_ledger_lines())
 
         # Cache ledger codes to ledger GUIDs.
         ledger_ids = self.get_ledger_code_to_guid_map(
             set(i['code'] for i in ledger_lines))
 
-        for ledger_line in self.get_ledger_lines():
-            line = {
-                # Again: converting from decimal to str to get reliable
-                # precision.
-                'AmountDC': str(ledger_line['total_amount_excl_vat']),
-                'AmountFC': str(ledger_line['total_amount_excl_vat']),
-                'Description': ledger_line['description'],
-                'GLAccount': ledger_ids[ledger_line['code']],
-                'VATCode': self.get_vatcode_for_ledger_line(ledger_line),
-            }
-            ret.append(line)
+        for ledger_line in ledger_lines:
+            ret.append(self.assemble_line(ledger_line, ledger_ids))
 
         return ret
+
+    def assemble_line(self, ledger_line, ledger_ids):
+        line = {
+            # Again: converting from decimal to str to get reliable
+            # precision.
+            'AmountDC': str(ledger_line['total_amount_excl_vat']),
+            'AmountFC': str(ledger_line['total_amount_excl_vat']),
+            'Description': ledger_line['description'],
+            'GLAccount': ledger_ids[ledger_line['code']],
+            'VATCode': self.get_vatcode_for_ledger_line(ledger_line),
+        }
+
+        # Optional
+        if 'month' in ledger_line:
+            assert ledger_line['month'].day == 1, ledger_line
+            line['From'] = ledger_line['month'].strftime(
+                "datetime'%Y-%m-%d'")
+            end_of_month = (
+                (ledger_line['month'] + timedelta(days=40))
+                .replace(day=1) - timedelta(days=1))
+            line['To'] = end_of_month.strftime("datetime'%Y-%m-%d'")
+
+        return line
 
     def commit(self):
         try:
