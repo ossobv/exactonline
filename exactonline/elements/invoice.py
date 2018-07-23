@@ -122,6 +122,41 @@ class ExactInvoice(ExactElement):
         """
         raise NotImplementedError()
 
+    def get_vatcode_for_ledger_line(self, ledger_line):
+        """
+        Get VATCode (up to three digit number) for the specified ledger line.
+
+        Can be as simple as:
+
+            return '0  '  # one VAT category only
+
+        Or more complicated, like:
+
+            if ledger_line['vat_percentage'] == 21:
+                return '2  '  # high VAT
+            assert ledger_line['vat_percentage'] == 0
+            customer = self._bosso_invoice.customer
+            assert customer.has_vat_number()
+            if customer.is_in_nl():
+                return '0  '  # no VAT
+            elif customer.is_in_eu():
+                return '7  '  # inside EU, no VAT
+            return '6  '  # outside EU, no VAT
+        """
+        # Exact accepts receiving 'VATPercentage', but only when it is
+        # higher than 0. Possibly because we have more than one match
+        # for 0%? So, we'll have to fetch the right VATCode instead.
+        vat_percentage = ledger_line['vat_percentage']
+
+        if vat_percentage == 0:
+            vatcode = '0  '  # FIXME: hardcoded.. fetch from API?
+        elif vat_percentage == 21:
+            vatcode = '2  '  # FIXME: hardcoded.. fetch from API?
+        else:
+            raise NotImplementedError('Unknown VAT: %s' % (vat_percentage,))
+
+        return vatcode
+
     def hint_exact_invoice_number(self):
         """
         Return invoice number you suggest ExactOnline will use for the
@@ -193,23 +228,15 @@ class ExactInvoice(ExactElement):
             set(i['code'] for i in ledger_lines))
 
         for ledger_line in self.get_ledger_lines():
-            # We must use VATCode. It accepts VATPercentages, but only
-            # when it is higher than 0. Not using:
-            # 'VATPercentage': str(ledger_line['vat_percentage'] / 100)
-            if ledger_line['vat_percentage'] == 0:
-                vatcode = '0  '  # FIXME: hardcoded.. fetch from API?
-            elif ledger_line['vat_percentage'] == 21:
-                vatcode = '2  '  # FIXME: hardcoded.. fetch from API?
-            else:
-                raise NotImplementedError(
-                    'Unknown VAT: %s' % (ledger_line['vat_percentage'],))
-
-            # Again, convert from decimal to str to get more precision.
-            line = {'AmountDC': str(ledger_line['total_amount_excl_vat']),
-                    'AmountFC': str(ledger_line['total_amount_excl_vat']),
-                    'Description': ledger_line['description'],
-                    'GLAccount': ledger_ids[ledger_line['code']],
-                    'VATCode': vatcode}
+            line = {
+                # Again: converting from decimal to str to get reliable
+                # precision.
+                'AmountDC': str(ledger_line['total_amount_excl_vat']),
+                'AmountFC': str(ledger_line['total_amount_excl_vat']),
+                'Description': ledger_line['description'],
+                'GLAccount': ledger_ids[ledger_line['code']],
+                'VATCode': self.get_vatcode_for_ledger_line(ledger_line),
+            }
             ret.append(line)
 
         return ret
