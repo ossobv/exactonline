@@ -258,11 +258,11 @@ class ExactInvoice(ExactElement):
         if 'month' in ledger_line:
             assert ledger_line['month'].day == 1, ledger_line
             line['From'] = ledger_line['month'].strftime(
-                "datetime'%Y-%m-%d'")
+                '%Y-%m-%dT%H:%M:%SZ')
             end_of_month = (
                 (ledger_line['month'] + timedelta(days=40))
                 .replace(day=1) - timedelta(days=1))
-            line['To'] = end_of_month.strftime("datetime'%Y-%m-%d'")
+            line['To'] = end_of_month.strftime('%Y-%m-%dT%H:%M:%SZ')
 
         return line
 
