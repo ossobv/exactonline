@@ -11,11 +11,7 @@ from .manager import Manager
 class BankAccounts(Manager):
     resource = 'crm/BankAccounts'
     
-    def filter(self, account=None, **kwargs):
-		# $select=Account
-        # if 'select' not in kwargs:
-            # kwargs['select'] = 'Account'
-		
+    def filter(self, account=None, **kwargs):	
         if account is not None:
             remote_id = self._remote_account(account)
             # Filter by our account number.
