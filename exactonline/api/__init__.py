@@ -18,6 +18,7 @@ from .invoices import Invoices
 from .ledgeraccounts import LedgerAccounts
 from .receivables import Receivables
 from .relations import Relations
+from .bankaccounts import BankAccounts
 from .vatcodes import VatCodes
 
 
@@ -38,4 +39,5 @@ class ExactApi(
     ledgeraccounts = LedgerAccounts.as_property()
     receivables = Receivables.as_property()
     relations = Relations.as_property()
+    bankaccounts = BankAccounts.as_property()
     vatcodes = VatCodes.as_property()
