@@ -117,4 +117,4 @@ class Manager(object):
         return remote_datetime.strftime("datetime'%Y-%m-%d'")
 
     def _remote_guid(self, remote_guid):
-        return "guid'%s'" % (remote_guid,)
+        return "guid'%s'" % (remote_guid.replace("'", "''"),)

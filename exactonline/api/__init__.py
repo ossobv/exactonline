@@ -5,7 +5,7 @@ ExactApi class.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2018 Walter Doekes, OSSO B.V.
 """
 from ..rawapi import ExactRawApi
 
@@ -13,6 +13,7 @@ from .autorefresh import Autorefresh
 from .unwrap import Unwrap
 from .v1division import V1Division
 
+from .bankaccounts import BankAccounts
 from .contacts import Contacts
 from .invoices import Invoices
 from .ledgeraccounts import LedgerAccounts
@@ -33,6 +34,7 @@ class ExactApi(
     # The base class comes last: talk to /api.
     ExactRawApi
 ):
+    bankaccounts = BankAccounts.as_property()
     contacts = Contacts.as_property()
     invoices = Invoices.as_property()
     ledgeraccounts = LedgerAccounts.as_property()

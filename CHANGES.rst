@@ -3,6 +3,8 @@ Changes
 
 * v0.3.3+dev:
 
+  - Added bankaccounts manager. Closes #21. Thanks Edwin van de Ven
+    (@edwinvandeven).
   - Added global configurable iteration limit parameter.
 
     Default unpagination was limited to 50 to avoid infinite loops in
@@ -11,7 +13,7 @@ Changes
     Set the iteration_limit in your config storage to a higher value if
     you run into "Iteration ... limit reached!".
 
-    Closes #22.
+    Closes #22. Thanks George Viorel Visniuc (@gvisniuc).
 
 * v0.3.3:
 
