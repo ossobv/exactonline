@@ -3,7 +3,15 @@ Changes
 
 * v0.3.3+dev:
 
-  - FIXME
+  - Added global configurable iteration limit parameter.
+
+    Default unpagination was limited to 50 to avoid infinite loops in
+    case of bugs or bad data. Some users require more pages of output.
+
+    Set the iteration_limit in your config storage to a higher value if
+    you run into "Iteration ... limit reached!".
+
+    Closes #22.
 
 * v0.3.3:
 

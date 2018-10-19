@@ -241,6 +241,8 @@ Take that info, and configure it in your ``config.ini``.
     base_url = https://example.com
     client_id = {12345678-abcd-1234-abcd-0123456789ab}
     client_secret = ZZZ999xxx000
+    ; optional config:
+    iteration_limit = 50
 
 Create an initial URL:
 
