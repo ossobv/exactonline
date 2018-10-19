@@ -14,8 +14,10 @@ class Unwrap(object):
         iteration = 0
         ret = []
 
+        iteration_limit = self.storage.get_iteration_limit()
+
         while request:
-            if iteration >= 50:
+            if iteration >= iteration_limit:
                 raise ValueError(
                     'Iteration %d limit reached! Last resource %r' % (
                         iteration, request.resource))
