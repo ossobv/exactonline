@@ -1,6 +1,12 @@
 Changes
 -------
 
+* v0.3.4:
+
+  - Added configurable interation limit parameter
+
+    Closes #22
+
 * v0.3.3+dev:
 
   - ...
@@ -72,7 +78,7 @@ Changes
     invoices elements class.
 
 * v0.2.0:
-  
+
   - Update build/PyPI info: move to Stable, add Python 3.4 and 3.5
     version, fix Python 3 compatibility.
   - Fix a few README RST issues. Update OAuth documentation.
