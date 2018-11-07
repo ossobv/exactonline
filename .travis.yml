@@ -14,6 +14,7 @@ install: pip install coverage flake8
 
 # Command to run tests:
 script:
-  - NO_EXTERNAL_REQUESTS=1 python -m coverage run --include='exactonline/*' runtests.py
+  - NO_EXTERNAL_REQUESTS=1 python -m coverage run
+      --include='exactonline/*' --omit='*_test.py' runtests.py
   - flake8 --max-complexity=9 .
   - python -m coverage report --show-missing --fail-under 65

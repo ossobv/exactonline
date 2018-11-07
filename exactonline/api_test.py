@@ -11,7 +11,7 @@ from unittest import TestCase
 
 from .api import ExactApi
 from .http import opt_secure
-from .storage import ExactOnlineConfig, NoOptionError
+from .storage import ExactOnlineConfig, MissingSetting
 
 from .http_test import HttpTestServer
 
@@ -48,11 +48,11 @@ class ApiTestCase(TestCase):
 
         def get(self, section, option):
             if section not in self._data:
-                raise NoOptionError(section, option)
+                raise MissingSetting(section, option)
             try:
                 value = self._data[section][option]
             except KeyError:
-                raise NoOptionError(section, option)
+                raise MissingSetting(section, option)
             return value
 
         def set(self, section, option, value):

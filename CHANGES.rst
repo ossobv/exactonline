@@ -15,6 +15,9 @@ Changes
 
     Closes #22. Thanks George Viorel Visniuc (@gvisniuc).
 
+  - Move storage/config backends to separate storage subdir. This way we
+    don't require the configparse if you're not using the IniStorage.
+
 * v0.3.3:
 
   - Additions to ExactInvoice element:
