@@ -3,11 +3,12 @@ Changes
 
 * v0.3.3+dev:
 
-  - ...
+  - FIXME
 
 * v0.3.3:
 
   - Additions to ExactInvoice element:
+
     + Add optional "month" to get_ledger_lines() for accrued/deferred
       income.
     + Add get_vatcode_for_ledger_line() for customizable VATCodes.
@@ -72,7 +73,7 @@ Changes
     invoices elements class.
 
 * v0.2.0:
-  
+
   - Update build/PyPI info: move to Stable, add Python 3.4 and 3.5
     version, fix Python 3 compatibility.
   - Fix a few README RST issues. Update OAuth documentation.
