@@ -17,4 +17,4 @@ script:
   - NO_EXTERNAL_REQUESTS=1 python -m coverage run
       --include='exactonline/*' --omit='*_test.py' runtests.py
   - flake8 --max-complexity=9 .
-  - python -m coverage report --show-missing --fail-under 65
+  - python -m coverage report --show-missing --fail-under 50
