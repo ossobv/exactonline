@@ -27,9 +27,9 @@ class V1Division(object):
 
         urlbase = 'v1/%d/' % (division,)
 
-        if beta == True:
+        if beta is True:
             urlbase = 'v1/beta/%d/' % (division,)
-        if bulk == True:
+        if bulk is True:
             urlbase = 'v1/%d/bulk/' % (division,)
 
         request = request.update(resource=urljoin(urlbase, request.resource))
