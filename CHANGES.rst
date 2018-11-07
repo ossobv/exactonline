@@ -1,6 +1,10 @@
 Changes
 -------
 
+* v0.3.4+dev:
+
+  - FIXME
+
 * v0.3.4:
 
   - Added bankaccounts manager. Closes #21. Thanks Edwin van de Ven
