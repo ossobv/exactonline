@@ -10,7 +10,8 @@ from unittest import TestCase, main
 from io import StringIO
 from os import path, unlink
 
-from .storage.ini import IniStorage, MissingSetting
+from . import MissingSetting
+from .ini import IniStorage
 
 
 class IniStorageTestCase(TestCase):
@@ -73,7 +74,8 @@ class IniStorageTestCase(TestCase):
         self.assertRaises(MissingSetting, config.get_refresh_token)
 
     def test_example_ini(self):
-        config = IniStorage(path.join(path.dirname(__file__), 'example.ini'))
+        config = IniStorage(
+            path.join(path.dirname(__file__), 'ini_example.ini'))
 
         # [server]
         self.assertEqual(config.get_auth_url(),

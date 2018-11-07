@@ -34,7 +34,7 @@ Set up the basics:
     from exactonline.api import ExactApi
     from exactonline.exceptions import ObjectDoesNotExist
     from exactonline.resource import GET, POST, PUT, DELETE
-    from exactonline.storage import IniStorage
+    from exactonline.storage.ini import IniStorage
 
     # Create a function to get the api with your own storage backend.
     def get_api():
@@ -212,7 +212,7 @@ You'll need a storage backend. The default ``IniStorage`` can be taken from
 
 .. code-block:: python
 
-    from exactonline.storage import IniStorage
+    from exactonline.storage.ini import IniStorage
 
     class MyIniStorage(IniStorage):
         def get_response_url(self):

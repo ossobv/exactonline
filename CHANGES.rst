@@ -17,6 +17,9 @@ Changes
 
   - Move storage/config backends to separate storage subdir. This way we
     don't require the configparse if you're not using the IniStorage.
+    Shows a DeprecationWarning so you have time to update your code.
+
+    Closes #19.
 
 * v0.3.3:
 

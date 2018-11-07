@@ -29,7 +29,18 @@ and get() method and inherit from the ExactOnlineConfig.
             self.store_stuff_somewhere(...)
 
 """
+from warnings import warn
+
 from .base import ExactOnlineConfig, MissingSetting
-from .ini import IniStorage
+from .ini import IniStorage as _IniStorage
 
 __all__ = ('ExactOnlineConfig', 'IniStorage', 'MissingSetting')
+
+
+class IniStorage(_IniStorage):
+    def __init__(self, *args, **kwargs):
+        warn(
+            'IniStorage has been moved to exactonline.storage.ini. '
+            'Please update your imports.',
+            DeprecationWarning)
+        super(IniStorage, self).__init__(*args, **kwargs)
