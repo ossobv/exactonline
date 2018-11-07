@@ -52,7 +52,7 @@ test: $(PYFILES)
 	# Check RST, somewhat.
 	$(PYTHON) setup.py check --restructuredtext --strict
 	# Run tests on the rest.
-	./test.sh
+	./runtests23.sh
 
 vimmodelines:
 	find $(WHERE) -name '*.py' -size +0 '!' -perm -u=x -print0 | \
