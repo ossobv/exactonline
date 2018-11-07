@@ -137,7 +137,8 @@ class ExactOnlineConfig(object):
         return native_string(self.get('application', 'base_url'))
 
     def get_iteration_limit(self):
-        return int(self.get_or_set_default('application', 'iteration_limit', '50'))
+        return int(self.get_or_set_default(
+            'application', 'iteration_limit', '50'))
 
     def get_response_url(self):
         """
