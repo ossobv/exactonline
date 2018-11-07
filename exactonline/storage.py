@@ -75,7 +75,7 @@ else:
     def native_string(value):
         if isinstance(value, str):
             return value
-        if isinstance(value, unicode):
+        if isinstance(value, unicode):  # noqa: no NameError for flake8.3
             return value.encode('utf-8')
         return str(value)
 

@@ -48,6 +48,7 @@ def binquote(value):
     """
     return quote(value.encode('utf-8'))
 
+
 urljoin  # touch it, we don't use it
 
 
@@ -142,6 +143,7 @@ class Options(object):
                     setattr(new_options, item, source_item)
 
         return new_options
+
 
 # Default options.
 opt_default = Options()
