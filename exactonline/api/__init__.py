@@ -17,6 +17,7 @@ from .bankaccounts import BankAccounts
 from .contacts import Contacts
 from .invoices import Invoices
 from .ledgeraccounts import LedgerAccounts
+from .quotations import Quotations
 from .receivables import Receivables
 from .relations import Relations
 from .vatcodes import VatCodes
@@ -38,6 +39,7 @@ class ExactApi(
     contacts = Contacts.as_property()
     invoices = Invoices.as_property()
     ledgeraccounts = LedgerAccounts.as_property()
+    quotations = Quotations.as_property()
     receivables = Receivables.as_property()
     relations = Relations.as_property()
     vatcodes = VatCodes.as_property()
