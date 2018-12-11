@@ -28,7 +28,10 @@ class QuotationStatus:
 class QuotationAcceptAction:
     """
     The action undertaken during the AcceptQuotationCall
-    0 = No action (Default), 1 = create sales order, 2 = create sales invoice, 3 = create project
+    0 = No action (Default)
+    1 = create sales order
+    2 = create sales invoice
+    3 = create project
     """
     NO_ACTION = 0
     CREATE_SALES_ORDER = 1
@@ -57,16 +60,24 @@ class Quotations(Manager):
 
     def parse_result(self, result):
         """
-        Pares the response from the api by making datetime objects of the json date strings
+        Pares the response from the api
+        by making datetime objects of the json date strings
 
         :param result: The response to parse
         :return: Parsed response
         """
         # Converts dates
+        date_fields = ('CloseDate',
+                       'ClosingDate',
+                       'Created',
+                       'DueDate',
+                       'Modified',
+                       'QuotationDate')
         for quotation in result:
-            for date_field in ('CloseDate', 'ClosingDate', 'Created', 'DueDate', 'Modified', 'QuotationDate'):
+            for date_field in date_fields:
                 if date_field in quotation:
-                    quotation[date_field] = self.json_date_to_datetime(quotation[date_field])
+                    quotation[date_field] = self.json_date_to_datetime(
+                        quotation[date_field])
 
         return result
 
@@ -89,4 +100,5 @@ class Quotations(Manager):
                 mm = -mm
             milliseconds += (hh * 60 + mm) * 60000
 
-        return datetime.datetime(1970, 1, 1) + datetime.timedelta(milliseconds=milliseconds)
+        return datetime.datetime(1970, 1, 1) + datetime.timedelta(
+            milliseconds=milliseconds)
