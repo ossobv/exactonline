@@ -4,16 +4,3 @@
 /build/
 /dist/
 /.coverage
-
-# Environments 
-.env 
-.venv 
-env/ 
-venv/ 
-ENV/ 
-env.bak/ 
-venv.bak/
-
-
-#ide
-.idea
