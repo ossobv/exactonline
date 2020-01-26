@@ -156,6 +156,33 @@ class IniStorageTestCase(TestCase):
             except OSError:
                 pass
 
+    def test_that_you_cannot_use_multiple_storages(self):
+        "You can use multiple IniStorage()s, but not at the same time"
+        try:
+            self.assertFalse(path.exists('storage-gets-created.ini'))
+            config = IniStorage('storage-gets-created.ini')
+            config_opened_too_soon = IniStorage('storage-gets-created.ini')
+            config.set_refresh_token('some-token')
+            config_opened_after_write = IniStorage('storage-gets-created.ini')
+
+            # Our storage has the right data (obviously).
+            self.assertEqual(
+                config.get_refresh_token(), 'some-token')
+            # A new storage opened after updating the source file has
+            # the right data.
+            self.assertEqual(
+                config_opened_after_write.get_refresh_token(), 'some-token')
+            # A second storage opened before updating a different one,
+            # does not get any updates. The INI file is read during
+            # construction, after all.
+            with self.assertRaises(MissingSetting):
+                config_opened_too_soon.get_refresh_token()
+        finally:
+            try:
+                unlink('storage-gets-created.ini')
+            except OSError:
+                pass
+
 
 if __name__ == '__main__':
     main()

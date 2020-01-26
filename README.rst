@@ -38,6 +38,8 @@ Set up the basics:
 
     # Create a function to get the api with your own storage backend.
     def get_api():
+        # NOTE: The IniStorage is really simple does not synchronize with
+        # other instances. You should create your own storage. See below.
         storage = IniStorage('/path/to/config.ini')
         return ExactApi(storage=storage)
     api = get_api()
@@ -221,9 +223,13 @@ You'll need a storage backend. The default ``IniStorage`` can be taken from
 
     storage = MyIniStorage('/path/to/config.ini')
 
-(Note that you're not tied to using ``.ini`` files. See
-``exactonline/storage.py`` if you want to use a different storage
-backend.)
+.. note:: *The IniStorage does not synchronize with other instances*
+
+    *This means that you cannot use multiple IniStorage instances at the same
+    time. If you want that, or thread-safe/multi-process-safe operations, or
+    better yet, integration with your project storage (database?), you should
+    create your custom storage backend. Look in ``exactonline/storage/base.py``
+    to see how. It's really easy.*
 
 You need to set up access to your Exact Online SaaS instance, by creating an
 export link. See `creating Exact Online credentials`_ for more info.
