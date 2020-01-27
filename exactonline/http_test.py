@@ -108,24 +108,24 @@ class HttpTestCase(TestCase):
         # Ensure that the testserver refuses if the method is bad.
         server = HttpTestServer('FAIL', '555', 'failure')
         self.assertRaises(HTTPError, http_get,
-                          'http://127.0.0.1:%d/path' % (server.port,))
+                          'http://localhost:%d/path' % (server.port,))
         server.join()
 
     def test_delete(self):
         server = HttpTestServer('DELETE', '200', 'whatever1')
-        data = http_delete('http://127.0.0.1:%d/path' % (server.port,))
+        data = http_delete('http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever1')
 
     def test_get(self):
         server = HttpTestServer('GET', '200', 'whatever2')
-        data = http_get('http://127.0.0.1:%d/path' % (server.port,))
+        data = http_get('http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever2')
 
     def test_post(self):
         server = HttpTestServer('POST', '200', 'whatever3')
-        data = http_post('http://127.0.0.1:%d/path' % (server.port,))
+        data = http_post('http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever3')
 
@@ -133,7 +133,7 @@ class HttpTestCase(TestCase):
         server = HttpTestServer('POST', '200', body=None)  # no body => echo
         indata = 'abc DEF\nghi JKL\n'
         data = http_post(
-            'http://127.0.0.1:%d/path' % (server.port,), data=indata)
+            'http://localhost:%d/path' % (server.port,), data=indata)
         server.join()
 
         data = data.decode('utf-8')
@@ -142,14 +142,14 @@ class HttpTestCase(TestCase):
 
     def test_put(self):
         server = HttpTestServer('PUT', '200', 'whatever4')
-        data = http_put('http://127.0.0.1:%d/path' % (server.port,))
+        data = http_put('http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever4')
 
     def test_502(self):
         server = HttpTestServer('GET', '502', 'eRrOr')
         try:
-            http_get('http://127.0.0.1:%d/path' % (server.port,))
+            http_get('http://localhost:%d/path' % (server.port,))
         except HTTPError as e:
             self.assertTrue(isinstance(e, request.HTTPError))
             self.assertEqual(e.code, 502)
@@ -160,7 +160,7 @@ class HttpTestCase(TestCase):
 
     def test_exception_str(self):
         server = HttpTestServer('POST', '503', '{"errno":1}')
-        url = 'http://127.0.0.1:%d/path' % (server.port,)
+        url = 'http://localhost:%d/path' % (server.port,)
         try:
             http_post(url, data='{"action":1}')
         except HTTPError as e:
@@ -176,16 +176,16 @@ class HttpTestCase(TestCase):
 
     def test_https_only_through_options(self):
         self.assertRaises(BadProtocol, http_get,
-                          'http://127.0.0.1/path', opt=opt_secure)
+                          'http://localhost/path', opt=opt_secure)
         self.assertRaises(BadProtocol, http_get,
-                          'ftp://127.0.0.1/path', opt=opt_secure)
+                          'ftp://localhost/path', opt=opt_secure)
 
     @skipIf(sys.version_info >= (2, 7, 9),
             'PEP-0476: Since Python 2.7.9, certificate verification is always '
             'enabled.')
     def test_https_no_secure(self):
         server = HttpTestServer('GET', '200', 'ssl', use_ssl=True)
-        data = http_get('https://127.0.0.1:%d/path' % (server.port,))
+        data = http_get('https://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'ssl')
 
@@ -201,7 +201,7 @@ class HttpTestCase(TestCase):
         # certificate.
         server = HttpTestServer('GET', '200', 'ssl', use_ssl=True)
         self.assertRaises(request.URLError, http_get,
-                          'https://127.0.0.1:%d/path' % (server.port,),
+                          'https://localhost:%d/path' % (server.port,),
                           opt=opt_secure)
         server.join()
 
@@ -211,7 +211,7 @@ class HttpTestCase(TestCase):
             path.dirname(__file__), 'http_testserver.crt')
         my_opt = opt_secure | my_opt
         server = HttpTestServer('GET', '200', 'ssl2', use_ssl=True)
-        data = http_get('https://127.0.0.1:%d/path' % (server.port,),
+        data = http_get('https://localhost:%d/path' % (server.port,),
                         opt=my_opt)
         server.join()
         self.assertDataEqual(data, 'ssl2')
