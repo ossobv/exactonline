@@ -2,7 +2,7 @@ Exact Online REST API Library in Python
 =======================================
 
 .. image:: https://bettercodehub.com/edge/badge/ossobv/exactonline
-.. image:: http://api.travis-ci.org/ossobv/exactonline.svg
+.. image:: http://api.travis-ci.com/ossobv/exactonline.svg
 
 Exact Online provides accounting software in a Software-as-a-Service
 delivery model. It implements an API through a REST interface. This
