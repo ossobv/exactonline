@@ -179,12 +179,15 @@ class ExactInvoice(ExactElement):
         """
         raise NotImplementedError()
 
+    def custom_data(self):
+        return {}
+
     def assemble(self):
         invoice_number = self.get_invoice_number()
         customer = self.get_customer()
 
-        total_amount_incl_vat = self.get_total_amount_incl_vat()
-        total_vat = self.get_total_vat()
+        # total_amount_incl_vat = self.get_total_amount_incl_vat()
+        # total_vat = self.get_total_vat()
         created_date = self.get_created_date()
         description = u'%s - %s, %s' % (invoice_number, customer.get_name(),
                                         created_date.strftime('%m-%Y'))
@@ -199,8 +202,8 @@ class ExactInvoice(ExactElement):
         # Compile data to send.
         data = {
             # Converting to string is better than converting to float.
-            'AmountDC': str(total_amount_incl_vat),  # DC=default_currency
-            'AmountFC': str(total_amount_incl_vat),  # FC=foreign_currency
+            # 'AmountDC': str(total_amount_incl_vat),  # DC=default_currency
+            # 'AmountFC': str(total_amount_incl_vat),  # FC=foreign_currency
 
             # Strange! We receive the date(time) objects as
             # '/Date(unixmilliseconds)/' (mktime(d.timetuple())*1000),
@@ -219,13 +222,13 @@ class ExactInvoice(ExactElement):
             'ReportingPeriod': created_date.month,
             'ReportingYear': created_date.year,
             'SalesEntryLines': self.assemble_lines(),
-            'VATAmountDC': str(total_vat),  # str>float, DC=default_currency
-            'VATAmountFC': str(total_vat),  # str>float, FC=foreign_currency
+            # 'VATAmountDC': str(total_vat),  # str>float, DC=default_currency
+            # 'VATAmountFC': str(total_vat),  # str>float, FC=foreign_currency
             'YourRef': invoice_number,
 
             'InvoiceNumber': self.hint_exact_invoice_number(),
         }
-
+        data.update(self.custom_data())
         return data
 
     def assemble_lines(self):
@@ -249,6 +252,8 @@ class ExactInvoice(ExactElement):
             # precision.
             'AmountDC': str(ledger_line['total_amount_excl_vat']),
             'AmountFC': str(ledger_line['total_amount_excl_vat']),
+            'From': ledger_line['from'],
+            'To': ledger_line['to'],
             'Description': ledger_line['description'],
             'GLAccount': ledger_ids[ledger_line['code']],
             'VATCode': self.get_vatcode_for_ledger_line(ledger_line),

@@ -15,6 +15,7 @@ class Invoices(Manager):
 
     def get(self, **kwargs):
         invoice_dict = super(Invoices, self).get(**kwargs)
+        print invoice_dict
         try:
             uri = invoice_dict[u'SalesEntryLines'][u'__deferred']['uri']
         except KeyError:

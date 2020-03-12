@@ -184,7 +184,7 @@ class ValidHTTPSConnection(HTTPConnection):
         HTTPConnection.__init__(self, *args, **kwargs)
 
     def connect(self):
-        "Connect to a host on a given (SSL) port."
+        # Connect to a host on a given (SSL) port.
         sock = socket.create_connection((self.host, self.port),
                                         self.timeout, self.source_address)
         if self._tunnel_host:

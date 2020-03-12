@@ -157,7 +157,7 @@ class IniStorageTestCase(TestCase):
                 pass
 
     def test_that_you_cannot_use_multiple_storages(self):
-        "You can use multiple IniStorage()s, but not at the same time"
+        # You can use multiple IniStorage()s, but not at the same time
         try:
             self.assertFalse(path.exists('storage-gets-created.ini'))
             config = IniStorage('storage-gets-created.ini')

@@ -27,7 +27,7 @@ except ImportError:  # python2
 
 
 class HttpTestServer(object):
-    "Super simple builtin HTTP test server."
+    # Super simple builtin HTTP test server.
     def __init__(self, method, code, body=None, use_ssl=False):
         from multiprocessing import Process
         from socket import socket, SHUT_RDWR
@@ -115,19 +115,19 @@ class HttpTestCase(TestCase):
         server = HttpTestServer('DELETE', '200', 'whatever1')
         data = http_delete('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever1')
+        self.assert_data_equal(data, 'whatever1')
 
     def test_get(self):
         server = HttpTestServer('GET', '200', 'whatever2')
         data = http_get('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever2')
+        self.assert_data_equal(data, 'whatever2')
 
     def test_post(self):
         server = HttpTestServer('POST', '200', 'whatever3')
         data = http_post('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever3')
+        self.assert_data_equal(data, 'whatever3')
 
     def test_post_actual_data(self):
         server = HttpTestServer('POST', '200', body=None)  # no body => echo
@@ -144,7 +144,7 @@ class HttpTestCase(TestCase):
         server = HttpTestServer('PUT', '200', 'whatever4')
         data = http_put('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever4')
+        self.assert_data_equal(data, 'whatever4')
 
     def test_502(self):
         server = HttpTestServer('GET', '502', 'eRrOr')
@@ -153,7 +153,7 @@ class HttpTestCase(TestCase):
         except HTTPError as e:
             self.assertTrue(isinstance(e, request.HTTPError))
             self.assertEqual(e.code, 502)
-            self.assertDataEqual(e.response, 'eRrOr')
+            self.assert_data_equal(e.response, 'eRrOr')
         else:
             self.assertFalse(True)
         server.join()
@@ -187,7 +187,7 @@ class HttpTestCase(TestCase):
         server = HttpTestServer('GET', '200', 'ssl', use_ssl=True)
         data = http_get('https://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'ssl')
+        self.assert_data_equal(data, 'ssl')
 
     @skipIf(environ.get('NO_EXTERNAL_REQUESTS', '') not in ('', '0'),
             'Calls external services. Do not run automatically.')
@@ -214,7 +214,7 @@ class HttpTestCase(TestCase):
         data = http_get('https://localhost:%d/path' % (server.port,),
                         opt=my_opt)
         server.join()
-        self.assertDataEqual(data, 'ssl2')
+        self.assert_data_equal(data, 'ssl2')
 
     @skipIf(environ.get('NO_EXTERNAL_REQUESTS', '') not in ('', '0'),
             'Calls external services. Do not run automatically.')
@@ -237,12 +237,10 @@ class HttpTestCase(TestCase):
     else:
         to_str = staticmethod(lambda x: x)  # binstr-to-binstr
 
-    def assertDataEqual(self, data, unistr):
-        """
-        Compares http_* returned data with a plain string. That plain string
-        can be unicode (python3) or binstring (python2). The data is always a
-        binstring.
-        """
+    def assert_data_equal(self, data, unistr):
+        # Compares http_* returned data with a plain string. That plain string
+        # can be unicode (python3) or binstring (python2). The data is always a
+        # binstring.
         unistr_passed = self.to_str(data)
         self.assertEqual(unistr_passed, unistr)
 

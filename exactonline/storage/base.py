@@ -157,8 +157,6 @@ class ExactOnlineConfig(object):
     def set_refresh_token(self, value):
         self.set('transient', 'refresh_token', native_string(value))
 
-    # ; aliases
-
     def get_refresh_url(self):
-        "Alias for get_token_url()."
+        # Alias for get_token_url().
         return self.get_token_url()
