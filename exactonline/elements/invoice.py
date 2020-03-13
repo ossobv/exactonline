@@ -291,6 +291,11 @@ class ExactInvoice(ExactElement):
             # Add new (and pop the SalesEntryLines from the invoice
             # dict).
             new_salesentrylines = data.pop('SalesEntryLines')
+            
+            self.remove_duplicates(new_salesentrylines, old_salesentrylines)
+
+            print new_salesentrylines
+
             for line in new_salesentrylines:
                 line['EntryID'] = exact_guid
                 self._api.restv1(POST('salesentry/SalesEntryLines', line))
@@ -323,3 +328,13 @@ class ExactInvoice(ExactElement):
         if isinstance(self._cached_remote, Exception):
             raise self._cached_remote
         return self._cached_remote
+
+    def remove_duplicates(self, new_salesentrylines, old_salesentrylines):
+        for n in new_salesentrylines[:]:
+            for o in old_salesentrylines:
+                for i in o:
+                    o[i.encode('utf-8')] = o.pop(i)
+                if set(n.items()) <= set(o.items()):
+                    new_salesentrylines.remove(n)
+                    old_salesentrylines.remove(o)
+                    break

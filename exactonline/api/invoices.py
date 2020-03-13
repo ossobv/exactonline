@@ -15,7 +15,6 @@ class Invoices(Manager):
 
     def get(self, **kwargs):
         invoice_dict = super(Invoices, self).get(**kwargs)
-        print invoice_dict
         try:
             uri = invoice_dict[u'SalesEntryLines'][u'__deferred']['uri']
         except KeyError:
@@ -31,7 +30,7 @@ class Invoices(Manager):
         if invoice_number is not None:
             remote_id = self._remote_invoice_number(invoice_number)
             # Filter by our invoice_number.
-            self._filter_append(kwargs, u'YourRef eq %s' % (remote_id,))
+            self._filter_append(kwargs, u"InvoiceNumber eq {}".format(invoice_number))
             # # Let the query return the invoice lines too. <-- DOES NOT WORK
             # assert 'expand' not in kwargs
             # kwargs['expand'] = 'SalesInvoiceLines'
@@ -44,7 +43,7 @@ class Invoices(Manager):
             remote_filter = []
             for invoice_number in invoice_number__in:
                 remote_id = self._remote_invoice_number(invoice_number)
-                remote_filter.append(u'YourRef eq %s' % (remote_id,))
+                remote_filter.append(u"InvoiceNumber eq {}".format(invoice_number))
             self._filter_append(
                 kwargs, u'(%s)' % (u' or '.join(remote_filter),))
 
