@@ -289,7 +289,7 @@ class ExactInvoice(ExactElement):
             # You don't want to do that the other way around, because
             # deleting the last item removes the entire invoice.
             old_salesentrylines = self.__get_remote()['SalesEntryLines']
-            
+
             self.convert(old_salesentrylines)
 
             # Add new (and pop the SalesEntryLines from the invoice
@@ -341,8 +341,10 @@ class ExactInvoice(ExactElement):
 
     def convert(self, salesentrylines):
         for salesentryline in salesentrylines:
-            salesentryline['From'] = datetime.datetime.fromtimestamp(int(re.search(r'\d+', salesentryline['From']).group()) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
-            salesentryline['To'] = datetime.datetime.fromtimestamp(int(re.search(r'\d+', salesentryline['To']).group()) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
+            salesentryline['From'] = datetime.datetime.fromtimestamp(
+                int(re.search(r'\d+', salesentryline['From']).group()) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
+            salesentryline['To'] = datetime.datetime.fromtimestamp(
+                int(re.search(r'\d+', salesentryline['To']).group()) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
             salesentryline['AmountFC'] = str(salesentryline['AmountFC'])
             salesentryline['AmountDC'] = str(salesentryline['AmountDC'])
             salesentryline['VATCode'] = str(int(salesentryline['VATCode']))

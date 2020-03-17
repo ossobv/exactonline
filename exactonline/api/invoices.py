@@ -28,9 +28,8 @@ class Invoices(Manager):
     def filter(self, invoice_number=None, invoice_number__in=None,
                reporting_period=None, **kwargs):
         if invoice_number is not None:
-            remote_id = self._remote_invoice_number(invoice_number)
             # Filter by our invoice_number.
-            self._filter_append(kwargs, u"InvoiceNumber eq {}".format(invoice_number))
+            self._filter_append(kwargs, u'InvoiceNumber eq {}'.format(invoice_number))
             # # Let the query return the invoice lines too. <-- DOES NOT WORK
             # assert 'expand' not in kwargs
             # kwargs['expand'] = 'SalesInvoiceLines'
@@ -42,8 +41,7 @@ class Invoices(Manager):
             # Filter by any of the supplied invoice numbers.
             remote_filter = []
             for invoice_number in invoice_number__in:
-                remote_id = self._remote_invoice_number(invoice_number)
-                remote_filter.append(u"InvoiceNumber eq {}".format(invoice_number))
+                remote_filter.append(u'InvoiceNumber eq {}'.format(invoice_number))
             self._filter_append(
                 kwargs, u'(%s)' % (u' or '.join(remote_filter),))
 
