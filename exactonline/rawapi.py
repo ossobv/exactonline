@@ -160,7 +160,6 @@ class ExactRawApi(object):
             raise NotImplementedError(
                 'No REST handler for request.method %s' % (
                     request.method,))
-
         return _json_safe(response)
 
     def _set_tokens(self, jsondata):

@@ -28,6 +28,8 @@ from datetime import timedelta
 from .base import ExactElement
 from ..exceptions import ExactOnlineError, ObjectDoesNotExist
 from ..resource import DELETE, POST
+import re
+import datetime
 
 
 class UnknownLedgerCodes(ExactOnlineError):
@@ -287,14 +289,14 @@ class ExactInvoice(ExactElement):
             # You don't want to do that the other way around, because
             # deleting the last item removes the entire invoice.
             old_salesentrylines = self.__get_remote()['SalesEntryLines']
+            
+            self.convert(old_salesentrylines)
 
             # Add new (and pop the SalesEntryLines from the invoice
             # dict).
             new_salesentrylines = data.pop('SalesEntryLines')
-            
-            self.remove_duplicates(new_salesentrylines, old_salesentrylines)
 
-            print new_salesentrylines
+            self.remove_duplicates(new_salesentrylines, old_salesentrylines)
 
             for line in new_salesentrylines:
                 line['EntryID'] = exact_guid
@@ -332,9 +334,15 @@ class ExactInvoice(ExactElement):
     def remove_duplicates(self, new_salesentrylines, old_salesentrylines):
         for n in new_salesentrylines[:]:
             for o in old_salesentrylines:
-                for i in o:
-                    o[i.encode('utf-8')] = o.pop(i)
-                if set(n.items()) <= set(o.items()):
+                if n.items() <= o.items():
                     new_salesentrylines.remove(n)
                     old_salesentrylines.remove(o)
                     break
+
+    def convert(self, salesentrylines):
+        for salesentryline in salesentrylines:
+            salesentryline['From'] = datetime.datetime.fromtimestamp(int(re.search(r'\d+', salesentryline['From']).group()) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
+            salesentryline['To'] = datetime.datetime.fromtimestamp(int(re.search(r'\d+', salesentryline['To']).group()) / 1000).strftime('%Y-%m-%dT%H:%M:%SZ')
+            salesentryline['AmountFC'] = str(salesentryline['AmountFC'])
+            salesentryline['AmountDC'] = str(salesentryline['AmountDC'])
+            salesentryline['VATCode'] = str(int(salesentryline['VATCode']))
