@@ -29,6 +29,7 @@ class ApiTestCase(TestCase):
                 'client_id': 'CLIENT_ID',
                 'client_secret': 'CLIENT_SECRET',
                 'division': 1,
+                'iteration_limit': 50,
                 'auth': {
                     'access_token': 'ACCESS_TOKEN',
                     'refresh_token': 'REFRESH_TOKEN',
