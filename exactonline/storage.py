@@ -114,8 +114,3 @@ class ExactOnlineConfig(Storage):
         self['auth']['refresh_token'] = string(value)
         self.save()
 
-    # ; aliases
-
-    def get_refresh_url(self):
-        "Alias for get_token_url()."
-        return self.get_token_url()

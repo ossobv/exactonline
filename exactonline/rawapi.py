@@ -95,7 +95,7 @@ class ExactRawApi(object):
                         refresh_params)
 
         # Fire away!
-        url = self.storage.get_refresh_url()
+        url = self.storage.get_token_url()
         response = _json_safe(http_post(url, refresh_data, opt=opt_secure))
 
         # Validate and store the values.
