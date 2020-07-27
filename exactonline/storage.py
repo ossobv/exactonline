@@ -13,7 +13,6 @@ class Storage():
     
     def __setitem__(self, k, v):
         self._data.__setitem__(k, v)
-        self.save()
 
     def __getitem__(self, k):
         return self._data.__getitem__(k)
@@ -85,30 +84,35 @@ class ExactOnlineConfig(Storage):
 
     def set_access_expiry(self, value):
         self['auth']['expiry'] = int(value)
+        self.save()
 
     def get_access_token(self):
         return self['auth']['access_token']
 
     def set_access_token(self, value):
         self['auth']['access_token'] = string(value)
+        self.save()
 
     def get_code(self):
         return self['auth']['code']
 
     def set_code(self, value):
         self['auth']['code'] = string(value)
+        self.save()
 
     def get_division(self):
         return self['division']
 
     def set_division(self, value):
         self['division'] = int(value)
+        self.save()
 
     def get_refresh_token(self):
         return self['auth']['refresh_token']
 
     def set_refresh_token(self, value):
         self['auth']['refresh_token'] = string(value)
+        self.save()
 
     # ; aliases
 
