@@ -6,6 +6,7 @@ This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
 Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 """
+from exactonline.storage import ExactOnlineConfig
 import json
 
 from time import time
@@ -31,7 +32,7 @@ def _json_safe(data):
 class ExactRawApi(object):
     def __init__(self, storage, **kwargs):
         super(ExactRawApi, self).__init__(**kwargs)
-        self.storage = storage
+        self.storage = ExactOnlineConfig(storage)
 
     def create_auth_request_url(self):
         # Build the URLs manually so we get consistent order.
