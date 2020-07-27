@@ -32,7 +32,10 @@ def _json_safe(data):
 class ExactRawApi(object):
     def __init__(self, storage, **kwargs):
         super(ExactRawApi, self).__init__(**kwargs)
-        self.storage = ExactOnlineConfig(storage)
+        if isinstance(storage, str):
+            self.storage = ExactOnlineConfig(storage)
+        else:
+            self.storage = storage
 
     def create_auth_request_url(self):
         # Build the URLs manually so we get consistent order.
