@@ -11,7 +11,7 @@ from unittest import TestCase
 
 from .api import ExactApi
 from .http import opt_secure
-from .storage import ExactOnlineConfig, MissingSetting
+from .storage import ExactOnlineConfig
 
 from .http_test import HttpTestServer
 
@@ -25,17 +25,11 @@ class ApiTestCase(TestCase):
     class MemoryStorage(ExactOnlineConfig):
         def __init__(self, server_port, **kwargs):
             self._data = {
-                'server': {
-                    'auth_url': 'http://127.0.0.1:%d/auth' % (server_port,),
-                    'rest_url': 'http://127.0.0.1:%d/api' % (server_port,),
-                    'token_url': 'http://127.0.0.1:%d/token' % (server_port,),
-                },
-                'application': {
-                    'client_id': 'CLIENT_ID',
-                    'client_secret': 'CLIENT_SECRET',
-                },
-                'transient': {
-                    'division': '1',
+                'api_url': 'http://127.0.0.1:%d/api' % (server_port,),
+                'client_id': 'CLIENT_ID',
+                'client_secret': 'CLIENT_SECRET',
+                'division': 1,
+                'auth': {
                     'access_token': 'ACCESS_TOKEN',
                     'refresh_token': 'REFRESH_TOKEN',
                 },
@@ -46,19 +40,17 @@ class ApiTestCase(TestCase):
         def get_division(self):
             return 1
 
-        def get(self, section, option):
-            if section not in self._data:
-                raise MissingSetting(section, option)
+        def __getitem__(self, k):
+            if k not in self._data:
+                raise Exception(f"Cannot find {k}")
             try:
-                value = self._data[section][option]
+                value = self._data.__getitem__(k)
             except KeyError:
-                raise MissingSetting(section, option)
+                raise Exception(f"Cannot find {k}")
             return value
 
-        def set(self, section, option, value):
-            if section not in self._data:
-                self._data[section] = {}
-            self._data[section][option] = value
+        def __setitem__(self, k, v):
+            self._data.__setitem__(k, v)
 
     def get_api(self, server_port):
         storage = self.MemoryStorage(server_port=server_port)

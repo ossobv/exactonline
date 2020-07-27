@@ -1,0 +1,14 @@
+{
+    "api_url": "https://start.exactonline.co.uk/api",
+    "redirect_url": "https://example.com",
+    "client_id": "12345678-abcd-1234-abcd-0123456789ab",
+    "client_secret": "ZZZ999xxx000",
+    "iteration_limit": 50,
+    "division": 123456,
+    "auth": {
+        "expiry": 1426492503,
+        "access_token": "dAfjGhB1k2tE2dkG12sd1Ff1A1fj2fH2Y1j1fKJl2f1sD1ON275zJNUy...",
+        "code": "dAfj!hB1k2tE2dkG12sd1Ff1A1fj2fH2Y1j1fKJl2f1sD1ON275zJNUy...",
+        "refresh_token": "SDFu!12SAah-un-56su-1fj2fH2Y1j1fKJl2f1sDfKJl2f1sD11FfUn1..."
+    }
+}

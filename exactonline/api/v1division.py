@@ -9,7 +9,6 @@ Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
 from ..exceptions import ExactOnlineError
 from ..http import urljoin
 from ..resource import GET
-from ..storage import MissingSetting
 
 
 class V1DivisionError(ExactOnlineError):
@@ -20,7 +19,7 @@ class V1Division(object):
     def restv1(self, request):
         try:
             division = self.storage.get_division()
-        except MissingSetting:
+        except:
             raise V1DivisionError('Division unset/blank in config')
         if not division:
             raise V1DivisionError('Division unset/blank in config')
