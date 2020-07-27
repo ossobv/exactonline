@@ -108,7 +108,7 @@ class ExactRawApi(object):
     # https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
     def rest(self, request):
         url = urljoin(
-            self.storage.get_rest_url().rstrip('/') + '/', request.resource)
+            self.storage.get_api_url().rstrip('/') + '/', request.resource)
 
         # Convert data to json.
         if request.data is None:
@@ -183,6 +183,6 @@ class ExactRawApi(object):
         assert decoded['token_type'] == 'bearer'
 
         # Store the values.
-        self.storage.set_access_expiry(int(time()) + expires_in)
+        self.storage.set_expiry(int(time()) + expires_in)
         self.storage.set_access_token(decoded['access_token'])
         self.storage.set_refresh_token(decoded['refresh_token'])

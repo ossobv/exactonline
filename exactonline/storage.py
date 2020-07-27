@@ -56,22 +56,22 @@ class ExactOnlineConfig(Storage):
             self.save()
 
     def get_auth_url(self):
-        return self.get_rest_url() + "/oauth2/auth"
+        return self.get_api_url() + "/oauth2/auth"
 
-    def get_rest_url(self):
+    def get_api_url(self):
         return self['api_url']
 
     def get_token_url(self):
-        return self.get_rest_url() + "/oauth2/token"
+        return self.get_api_url() + "/oauth2/token"
 
-    def get_base_url(self):
+    def get_redirect_url(self):
         return self['redirect_url']
 
     def get_iteration_limit(self):
         return self['iteration_limit']
 
     def get_response_url(self):
-        return self.get_base_url()
+        return self.get_redirect_url()
 
     def get_client_id(self):
         return self['client_id']
@@ -79,10 +79,10 @@ class ExactOnlineConfig(Storage):
     def get_client_secret(self):
         return self['client_secret']
 
-    def get_access_expiry(self):
+    def get_expiry(self):
         return self['auth']['expiry']
 
-    def set_access_expiry(self, value):
+    def set_expiry(self, value):
         self['auth']['expiry'] = int(value)
         self.save()
 
