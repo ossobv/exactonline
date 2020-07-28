@@ -40,13 +40,10 @@ Set up the basics:
     from exactonline.api import ExactApi
     from exactonline.exceptions import ObjectDoesNotExist
     from exactonline.resource import GET, POST, PUT, DELETE
-    from exactonline.storage.ini import IniStorage
 
     # Create a function to get the api with your own storage backend.
     def get_api():
-        # NOTE: The IniStorage is really simple does not synchronize with
-        # other instances. You should create your own storage. See below.
-        storage = IniStorage('/path/to/config.ini')
+        storage = Storage('/path/to/config.json')
         return ExactApi(storage=storage)
     api = get_api()
 
@@ -215,46 +212,39 @@ These adaptable elements are currently implemented for writing customers
 Setting up the link
 -------------------
 
-You'll need a storage backend. The default ``IniStorage`` can be taken from
-``exactonline.storage``.
+You'll need a storage backend.
 
 .. code-block:: python
 
-    from exactonline.storage.ini import IniStorage
-
-    class MyIniStorage(IniStorage):
-        def get_response_url(self):
+    class MyStorage(Storage):
+        def get_redirect_url(self):
             "Configure your custom response URL."
-            return self.get_base_url() + '/oauth/success/'
+            return self.get_redirect_url() + '/oauth/success/'
 
-    storage = MyIniStorage('/path/to/config.ini')
+    storage = MyStorage('/path/to/config.json')
 
-.. note:: *The IniStorage does not synchronize with other instances*
+.. note:: *The Storage does not synchronize with other instances*
 
-    *This means that you cannot use multiple IniStorage instances at the same
+    *This means that you cannot use multiple Storage instances at the same
     time. If you want that, or thread-safe/multi-process-safe operations, or
     better yet, integration with your project storage (database?), you should
-    create your custom storage backend. Look in ``exactonline/storage/base.py``
+    create your custom storage backend. Look in ``exactonline/storage.py``
     to see how. It's really easy.*
 
 You need to set up access to your Exact Online SaaS instance, by creating an
 export link. See `creating Exact Online credentials`_ for more info.
 
-Take that info, and configure it in your ``config.ini``.
+Take that info, and configure it in your ``config.json``.
 
-.. code-block:: ini
+.. code-block:: json
 
-    [server]
-    auth_url = https://start.exactonline.co.uk/api/oauth2/auth
-    rest_url = https://start.exactonline.co.uk/api
-    token_url = https://start.exactonline.co.uk/api/oauth2/token
-
-    [application]
-    base_url = https://example.com
-    client_id = {12345678-abcd-1234-abcd-0123456789ab}
-    client_secret = ZZZ999xxx000
-    ; optional config:
-    iteration_limit = 50
+    {
+        "api_url": "https://start.exactonline.nl/api",
+        "redirect_url": "https://example.com",
+        "client_id": "12345678-abcd-1234-abcd-0123456789ab",
+        "client_secret": "ZZZ999xxx000",
+        "iteration_limit": 50
+    }
 
 Create an initial URL:
 
