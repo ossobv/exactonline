@@ -30,7 +30,6 @@ class ExactOnlineConfig():
                 "code": ""
             }
         }
-        self.save()
 
     def get_auth_url(self):
         return self.get_api_url() + "/oauth2/auth"
@@ -58,38 +57,31 @@ class ExactOnlineConfig():
 
     def set_expiry(self, value):
         self._data['auth']['expiry'] = int(value)
-        self.save()
 
     def get_access_token(self):
         return self._data['auth']['access_token']
 
     def set_access_token(self, value):
         self._data['auth']['access_token'] = string(value)
-        self.save()
 
     def get_code(self):
         return self._data['auth']['code']
 
     def set_code(self, value):
         self._data['auth']['code'] = string(value)
-        self.save()
 
     def get_division(self):
         return self._data['division']
 
     def set_division(self, value):
         self._data['division'] = int(value)
-        self.save()
 
     def get_refresh_token(self):
         return self._data['auth']['refresh_token']
 
     def set_refresh_token(self, value):
         self._data['auth']['refresh_token'] = string(value)
-        self.save()
-    
-    def save(self):
-        pass
+
 
 class Storage(ExactOnlineConfig):
 
@@ -102,6 +94,26 @@ class Storage(ExactOnlineConfig):
                     self._data = json.load(f)
             except Exception as e:
                 print(e)
+    
+    def set_expiry(self, value):
+        super().set_expiry(value)
+        self.save()
+
+    def set_access_token(self, value):
+        super().set_access_token(value)
+        self.save()
+
+    def set_code(self, value):
+        super().set_code(value)
+        self.save()
+
+    def set_division(self, value):
+        super().set_division(value)
+        self.save()
+
+    def set_refresh_token(self, value):
+        super().set_refresh_token(value)
+        self.save()
 
     def save(self):
         if self.filename:
