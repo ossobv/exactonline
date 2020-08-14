@@ -1,6 +1,6 @@
 {
     "api_url": "https://start.exactonline.co.uk/api",
-    "redirect_url": "https://example.com",
+    "redirect_uri": "https://example.com",
     "client_id": "12345678-abcd-1234-abcd-0123456789ab",
     "client_secret": "ZZZ999xxx000",
     "iteration_limit": 50,

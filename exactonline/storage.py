@@ -18,7 +18,7 @@ class ExactOnlineConfig():
     def __init__(self):
         self._data = {
             "api_url": "https://start.exactonline.nl/api",
-            "redirect_url": "https://www.example.com/",
+            "redirect_uri": "https://www.example.com/",
             "client_id": "",
             "client_secret": "",
             "iteration_limit": 60,
@@ -40,8 +40,8 @@ class ExactOnlineConfig():
     def get_token_url(self):
         return self.get_api_url() + "/oauth2/token"
 
-    def get_redirect_url(self):
-        return self._data['redirect_url']
+    def get_redirect_uri(self):
+        return self._data['redirect_uri']
 
     def get_iteration_limit(self):
         return self._data['iteration_limit']

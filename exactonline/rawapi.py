@@ -41,7 +41,7 @@ class ExactRawApi(object):
         # Build the URLs manually so we get consistent order.
         auth_params = {
             'client_id': binquote(self.storage.get_client_id()),
-            'redirect_uri': binquote(self.storage.get_redirect_url()),
+            'redirect_uri': binquote(self.storage.get_redirect_uri()),
             'response_type': 'code',  # or 'token' for JS apps
         }
         auth_data = ('client_id=%(client_id)s'
@@ -59,7 +59,7 @@ class ExactRawApi(object):
             'client_secret': binquote(self.storage.get_client_secret()),
             'code': binquote(code),
             'grant_type': 'authorization_code',
-            'redirect_uri': binquote(self.storage.get_redirect_url()),
+            'redirect_uri': binquote(self.storage.get_redirect_uri()),
         }
         token_data = ('client_id=%(client_id)s'
                       '&client_secret=%(client_secret)s'

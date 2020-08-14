@@ -217,9 +217,9 @@ You'll need a storage backend.
 .. code-block:: python
 
     class MyStorage(Storage):
-        def get_redirect_url(self):
+        def get_redirect_uri(self):
             "Configure your custom response URL."
-            return self.get_redirect_url() + '/oauth/success/'
+            return self.get_redirect_uri() + '/oauth/success/'
 
     storage = MyStorage('/path/to/config.json')
 
@@ -240,7 +240,7 @@ Take that info, and configure it in your ``config.json``.
 
     {
         "api_url": "https://start.exactonline.nl/api",
-        "redirect_url": "https://example.com",
+        "redirect_uri": "https://example.com",
         "client_id": "12345678-abcd-1234-abcd-0123456789ab",
         "client_secret": "ZZZ999xxx000",
         "iteration_limit": 50
