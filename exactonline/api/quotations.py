@@ -1,3 +1,4 @@
+# vim: set ts=8 sw=4 sts=4 et ai tw=79:
 """
 Helpers to work with Quotations in exact online.
 
