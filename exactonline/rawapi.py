@@ -136,6 +136,9 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, request):
+        token_expiry = self.storage.get_access_expiry()
+        if token_expiry < int(time()) + 30:
+            self.refresh_token()
         token = self.storage.get_access_token()
         opt_custom = Options()
         opt_custom.headers = {
