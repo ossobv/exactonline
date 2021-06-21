@@ -1,9 +1,10 @@
 Changes
 -------
 
-* v0.3.5+dev:
+* v0.3.6:
 
-  - FIXME
+  - Try refreshing tokens *before* receiving a 401 per the request of
+    Alexandar Mechev (@apmechev).
 
 * v0.3.5:
 
