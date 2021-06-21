@@ -5,7 +5,7 @@ ExactApi class.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015-2018 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 """
 from ..rawapi import ExactRawApi
 
@@ -29,8 +29,7 @@ class ExactApi(
     # Strip the surrounding "d" and "results" dictionary
     # items.
     Unwrap,
-    # Ensure that tokens are refreshed: if we get a 401, refresh the
-    # tokens.
+    # Ensure that tokens are refreshed in a timely manner.
     Autorefresh,
     # The base class comes last: talk to /api.
     ExactRawApi

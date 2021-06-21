@@ -4,7 +4,7 @@ Base API interface.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015-2017 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 """
 import json
 
@@ -76,7 +76,9 @@ class ExactRawApi(object):
         self.storage.set_code(code)
 
     def refresh_token(self):
-        # Bring on the fresh stuff!
+        # Bring on the fresh stuff. This needs to be called 30 seconds before
+        # token expiry. Or after a 401. See the Autorefresh mixin.
+
         # Build the URLs manually so we get consistent order.
         refresh_params = {
             'client_id': binquote(self.storage.get_client_id()),
@@ -97,12 +99,12 @@ class ExactRawApi(object):
         # Validate and store the values.
         self._set_tokens(response)
 
-    # Don't pass "/api" in the resource, it's in the base URL already!
-    # And don't start with a slash either, since we use urljoin on it.
-    #
-    # See this for a list of possible resources.
-    # https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx?SourceAction=10
     def rest(self, request):
+        # Don't pass "/api" in the resource, it's in the base URL already!
+        # And don't start with a slash either, since we use urljoin on it.
+        #
+        # See this for a list of possible resources.
+        # https://start.exactonline.co.uk/docs/HlpRestAPIResources.aspx
         url = urljoin(
             self.storage.get_rest_url().rstrip('/') + '/', request.resource)
 
