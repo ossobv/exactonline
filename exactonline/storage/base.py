@@ -128,7 +128,8 @@ class ExactOnlineConfig(object):
     # ; their get methods have set counterparts.
 
     def get_access_expiry(self):
-        return int(self.get('transient', 'access_expiry'))
+        return int(self.get_or_set_default(
+            'transient', 'access_expiry', '0'))
 
     def set_access_expiry(self, value):
         self.set('transient', 'access_expiry', native_string(value))

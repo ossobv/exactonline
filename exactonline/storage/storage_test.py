@@ -4,7 +4,7 @@ Test ini storage class to the Exact Online REST API Library.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2015-2018 Walter Doekes, OSSO B.V.
+Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 """
 from unittest import TestCase, main
 from io import StringIO
@@ -67,7 +67,8 @@ class IniStorageTestCase(TestCase):
 
     def test_transient_no_defaults(self):
         config = IniStorage(StringIO())
-        self.assertRaises(MissingSetting, config.get_access_expiry)
+        # We do use a default of 0 for config.get_access_expiry.
+        # #self.assertRaises(MissingSetting, config.get_access_expiry)
         self.assertRaises(MissingSetting, config.get_access_token)
         self.assertRaises(MissingSetting, config.get_code)
         self.assertRaises(MissingSetting, config.get_division)

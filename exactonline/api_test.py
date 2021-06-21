@@ -4,9 +4,10 @@ API tests.
 
 This file is part of the Exact Online REST API Library in Python
 (EORALP), licensed under the LGPLv3+.
-Copyright (C) 2016 Walter Doekes, OSSO B.V.
+Copyright (C) 2016-2021 Walter Doekes, OSSO B.V.
 """
 import json
+from time import time
 from unittest import TestCase
 
 from .api import ExactApi
@@ -62,6 +63,11 @@ class ApiTestCase(TestCase):
 
     def get_api(self, server_port):
         storage = self.MemoryStorage(server_port=server_port)
+
+        # Set token expiry to 6 minutes, so we're not bothered by
+        # autorefresh.
+        storage.set_access_expiry(int(time()) + 360)
+
         return ExactApi(storage=storage)
 
     def test_call(self):
