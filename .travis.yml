@@ -6,7 +6,11 @@ python:
   # "3.3..3.4" -- skipped
   - "3.5"
   - "3.6"
-  - "nightly" # currently points to 3.7-dev
+  - "3.7"
+  - "3.8"
+  - "3.9"
+  #- "3.10" -- not yet..
+  - "nightly"
 
 # Optional command to install dependencies:
 #install: "pip install -r requirements.txt"

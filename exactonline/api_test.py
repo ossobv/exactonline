@@ -14,7 +14,7 @@ from .api import ExactApi
 from .http import opt_secure
 from .storage import ExactOnlineConfig, MissingSetting
 
-from .http_test import HttpTestServer
+from .http_test import HttpTestResponse, HttpTestServer
 
 
 # BEWARE: We disable security here! Don't import this unless you're
@@ -78,8 +78,58 @@ class ApiTestCase(TestCase):
             ]},
         }
         jsondata = json.dumps(data)
-        server = HttpTestServer('GET', '200', jsondata)
+
+        server = HttpTestServer()
+        server.add_response(HttpTestResponse('GET', '200', jsondata))
+        server.start()
+
         api = self.get_api(server_port=server.port)
         res = api.invoices.filter(filter=u"Currency eq '\u20ac'", top=5)
         server.join()
+        self.assertEqual(res, data['d']['results'])
+
+    def test_autorefresh(self):
+        data = {
+            'd': {'results': [
+                {'name': 'invoice1', 'identifier': 4},
+                {'name': 'invoice2', 'identifier': 44},
+            ]},
+        }
+        accesstoken = {
+            'access_token': "AAEAAGxWulSxg7ZT-MPQMWOqQmssMzGa",
+            'token_type': 'Bearer',
+            'expires_in': 600,
+            'refresh_token': 'Gcp7!IAAAABh4eI8DgkxRyGGyHPLLOz3y9Ss',
+        }
+        jsondata = json.dumps(data)
+        jsonaccesstoken = json.dumps(accesstoken)
+
+        # Set token expiry to 35 secs, no refresh yet.
+        server = HttpTestServer()
+        server.add_response(HttpTestResponse('GET', '200', jsondata))
+        server.start()
+        api = self.get_api(server_port=server.port)
+        api.storage.set_access_expiry(int(time()) + 35)
+        res = api.invoices.filter(filter=u"Currency eq '\u20ac'", top=5)
+        server.join()
+        self.assertEqual(res, data['d']['results'])
+
+        # Set token expiry to 25 secs, automatic refresh.
+        server = HttpTestServer()
+        server.add_response(HttpTestResponse('POST', '200', jsonaccesstoken))
+        server.add_response(HttpTestResponse('GET', '200', jsondata))
+        server.start()
+        api = self.get_api(server_port=server.port)
+        api.storage.set_access_expiry(int(time()) + 25)
+        self.assertLessEqual(api.storage.get_access_expiry(), time() + 25)
+        res = api.invoices.filter(filter=u"Currency eq '\u20ac'", top=5)
+        server.join()
+
+        # New access token has been stored.
+        self.assertEqual(
+            api.storage.get_access_token(),
+            'AAEAAGxWulSxg7ZT-MPQMWOqQmssMzGa')
+        self.assertGreater(api.storage.get_access_expiry(), time() + 300)
+
+        # And we still get the correct results.
         self.assertEqual(res, data['d']['results'])

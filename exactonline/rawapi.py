@@ -174,11 +174,11 @@ class ExactRawApi(object):
         decoded = json.loads(jsondata)
 
         # Validate the values.
-        assert decoded['access_token']
-        expires_in = int(decoded['expires_in'])
-        assert expires_in > 0
-        assert decoded['refresh_token']
-        assert decoded['token_type'] == 'bearer'
+        assert decoded.get('access_token'), decoded
+        expires_in = int(decoded.get('expires_in', '0'))
+        assert expires_in > 0, decoded
+        assert decoded.get('refresh_token'), decoded
+        assert decoded.get('token_type', '').lower() == 'bearer', decoded
 
         # Store the values.
         self.storage.set_access_expiry(int(time()) + expires_in)
