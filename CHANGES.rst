@@ -1,6 +1,10 @@
 Changes
 -------
 
+* v0.3.6+dev:
+
+  - FIXME
+
 * v0.3.6:
 
   - Try refreshing tokens *before* receiving a 401 per the request of
