@@ -7,12 +7,16 @@ This file is part of the Exact Online REST API Library in Python
 Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 """
 import json
+import logging
 
 from time import time
 
 from .http import (
     Options, opt_secure, http_delete, http_get, http_post, http_put,
     binquote, urljoin)
+
+
+logger = logging.getLogger(__name__)
 
 
 def _json_safe(data):
@@ -46,9 +50,11 @@ class ExactRawApi(object):
                      auth_params)
 
         url = '?'.join([self.storage.get_auth_url(), auth_data])
+        logger.debug('Created auth request URL {url}'.format(url=url))
         return url
 
     def request_token(self, code):
+        logger.debug('Requesting a new token')
         # Build the URLs manually so we get consistent order.
         token_params = {
             'client_id': binquote(self.storage.get_client_id()),
@@ -76,6 +82,7 @@ class ExactRawApi(object):
         self.storage.set_code(code)
 
     def refresh_token(self):
+        logger.debug('Refreshing token')
         # Bring on the fresh stuff. This needs to be called 30 seconds before
         # token expiry. Or after a 401. See the Autorefresh mixin.
 
@@ -166,6 +173,7 @@ class ExactRawApi(object):
         return _json_safe(response)
 
     def _set_tokens(self, jsondata):
+        logger.debug('Update tokens with newly retrieved token data')
         # The json should look somewhat like this:
         # {"access_token":"AAEA..",
         #  "token_type":"bearer",

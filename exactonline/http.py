@@ -8,10 +8,13 @@ Copyright (C) 2015-2016 Walter Doekes, OSSO B.V.
 
 We may want to replace this with something simpler.
 """
-import urllib
+import logging
 import socket
 import ssl
 import sys
+import urllib
+
+logger = logging.getLogger(__name__)
 
 try:
     from ssl import create_default_context
@@ -290,6 +293,9 @@ def _http_request(url, method=None, data=None, opt=None):
     else:
         opener = request.build_opener()
 
+    logger.debug(
+        'Outgoing request for {url} using method {method}'
+        .format(url=url, method=method))
     # Create the Request with optional extra headers.
     req = Request(url=url, data=data, method=method,
                   headers=(opt.headers or {}))
