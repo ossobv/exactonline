@@ -133,7 +133,7 @@ class ExactRawApi(object):
             data = json.dumps(request.data)
 
         new_request = request.update(resource=url, data=data)
-        response = self._rest_query(new_request)
+        response = self.raw_rest(new_request)
 
         if request.method in ('DELETE', 'PUT'):
             if response.data != '':
@@ -153,7 +153,10 @@ class ExactRawApi(object):
 
         return decoded
 
-    def _rest_query(self, request):
+    def raw_rest(self, request):
+        """
+        :return: a Response object with the http response headers and the UTF-8 decoded body.
+        """
         token = self.storage.get_access_token()
         opt_custom = Options()
         opt_custom.headers = {
