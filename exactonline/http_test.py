@@ -140,39 +140,39 @@ class HttpTestCase(TestCase):
 
     def test_delete(self):
         server = self.get_oneshot_server('DELETE', '200', 'whatever1')
-        data = http_delete('http://localhost:%d/path' % (server.port,))
+        response = http_delete('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever1')
+        self.assertDataEqual(response.body, 'whatever1')
 
     def test_get(self):
         server = self.get_oneshot_server('GET', '200', 'whatever2')
-        data = http_get('http://localhost:%d/path' % (server.port,))
+        response = http_get('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever2')
+        self.assertDataEqual(response.body, 'whatever2')
 
     def test_post(self):
         server = self.get_oneshot_server('POST', '200', 'whatever3')
-        data = http_post('http://localhost:%d/path' % (server.port,))
+        response = http_post('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever3')
+        self.assertDataEqual(response.body, 'whatever3')
 
     def test_post_actual_data(self):
         server = self.get_oneshot_server(
             'POST', '200', body=None)  # no body => echo
         indata = 'abc DEF\nghi JKL\n'
-        data = http_post(
+        response = http_post(
             'http://localhost:%d/path' % (server.port,), data=indata)
         server.join()
 
-        data = data.decode('utf-8')
+        data = response.body.decode('utf-8')
         header, outdata = data.split('\r\n\r\n', 1)
         self.assertEqual(outdata, indata)
 
     def test_put(self):
         server = self.get_oneshot_server('PUT', '200', 'whatever4')
-        data = http_put('http://localhost:%d/path' % (server.port,))
+        response = http_put('http://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'whatever4')
+        self.assertDataEqual(response.body, 'whatever4')
 
     def test_502(self):
         server = self.get_oneshot_server('GET', '502', 'eRrOr')
@@ -213,16 +213,16 @@ class HttpTestCase(TestCase):
             'enabled.')
     def test_https_no_secure(self):
         server = self.get_oneshot_server('GET', '200', 'ssl', use_ssl=True)
-        data = http_get('https://localhost:%d/path' % (server.port,))
+        response = http_get('https://localhost:%d/path' % (server.port,))
         server.join()
-        self.assertDataEqual(data, 'ssl')
+        self.assertDataEqual(response.body, 'ssl')
 
     @skipIf(environ.get('NO_EXTERNAL_REQUESTS', '') not in ('', '0'),
             'Calls external services. Do not run automatically.')
     def test_https_with_real_secure(self):
         # This should work with a proper certificate.
-        data = http_get('https://api.github.com/', opt=opt_secure)
-        self.assertEqual(HttpTestCase.to_str(data)[0:1], '{')  # json :)
+        response = http_get('https://api.github.com/', opt=opt_secure)
+        self.assertEqual(HttpTestCase.to_str(response.body)[0:1], '{')  # json :)
 
     def test_https_with_self_signed(self):
         # This should fail, because the testserver uses a self-signed
@@ -239,10 +239,10 @@ class HttpTestCase(TestCase):
             path.dirname(__file__), 'http_testserver.crt')
         my_opt = opt_secure | my_opt
         server = self.get_oneshot_server('GET', '200', 'ssl2', use_ssl=True)
-        data = http_get('https://localhost:%d/path' % (server.port,),
+        response = http_get('https://localhost:%d/path' % (server.port,),
                         opt=my_opt)
         server.join()
-        self.assertDataEqual(data, 'ssl2')
+        self.assertDataEqual(response.body, 'ssl2')
 
     @skipIf(environ.get('NO_EXTERNAL_REQUESTS', '') not in ('', '0'),
             'Calls external services. Do not run automatically.')

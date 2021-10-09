@@ -235,6 +235,13 @@ class ValidHTTPSHandler(request.HTTPSHandler):
         return self.do_open(class_, req)
 
 
+class EvaluatedResponse(object):
+    """Return value of the http_xxx() functions."""
+    def __init__(self, headers, body):
+        self.headers = headers
+        self.body = body
+
+
 def http_delete(url, opt=opt_default):
     """
     Shortcut for urlopen (DELETE) + read. We'll probably want to add a
@@ -304,7 +311,7 @@ def _http_request(url, method=None, data=None, opt=None):
     try:
         fp = opener.open(req)
         # print fp.info()  # (temp, print headers)
-        response = fp.read()
+        response = EvaluatedResponse(fp.getheaders(), fp.read())
     except request.HTTPError as exception:
         fp = exception.fp  # see finally clause
         exc_info = sys.exc_info()

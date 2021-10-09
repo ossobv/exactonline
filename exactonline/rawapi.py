@@ -19,6 +19,13 @@ from .http import (
 logger = logging.getLogger(__name__)
 
 
+class Response(object):
+    """Return value of ExactRawApi._rest_query()"""
+    def __init__(self, headers, data):
+        self.headers = headers
+        self.data = data
+
+
 def _json_safe(data):
     """
     json.loads wants an unistr in Python3. Convert it.
@@ -72,10 +79,11 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_token_url()
-        response = _json_safe(http_post(url, token_data, opt=opt_secure))
+        response = http_post(url, token_data, opt=opt_secure)
+        data = _json_safe(response.body)
 
         # Validate and store the values.
-        self._set_tokens(response)
+        self._set_tokens(data)
         # Store the code first after _set_tokens() has validated the
         # data. We don't want to store some bogus code fed to use by Joe
         # Random user.
@@ -101,10 +109,11 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_refresh_url()
-        response = _json_safe(http_post(url, refresh_data, opt=opt_secure))
+        response = http_post(url, refresh_data, opt=opt_secure)
+        data = _json_safe(response.body)
 
         # Validate and store the values.
-        self._set_tokens(response)
+        self._set_tokens(data)
 
     def rest(self, request):
         # Don't pass "/api" in the resource, it's in the base URL already!
@@ -127,7 +136,7 @@ class ExactRawApi(object):
         response = self._rest_query(new_request)
 
         if request.method in ('DELETE', 'PUT'):
-            if response != '':
+            if response.data != '':
                 raise ValueError(
                     'Expected empty data for %s operation: '
                     'resource=%r, returned=%r' % (
@@ -135,7 +144,7 @@ class ExactRawApi(object):
             decoded = None
         else:
             try:
-                decoded = json.loads(response)
+                decoded = json.loads(response.data)
             except ValueError:
                 raise ValueError(
                     'Expected valid JSON data for %s operation: '
@@ -170,7 +179,7 @@ class ExactRawApi(object):
                 'No REST handler for request.method %s' % (
                     request.method,))
 
-        return _json_safe(response)
+        return Response(response.headers, _json_safe(response.body))
 
     def _set_tokens(self, jsondata):
         logger.debug('Update tokens with newly retrieved token data')
