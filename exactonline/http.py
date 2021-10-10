@@ -236,7 +236,11 @@ class ValidHTTPSHandler(request.HTTPSHandler):
 
 
 class EvaluatedResponse(object):
-    """Return value of the http_xxx() functions."""
+    """This is the return value of the http_xxx() functions.
+
+    headers: Mapping[str, str]: header->value
+    body:
+    """
     def __init__(self, headers, body):
         self.headers = headers
         self.body = body
@@ -311,7 +315,7 @@ def _http_request(url, method=None, data=None, opt=None):
     try:
         fp = opener.open(req)
         # print fp.info()  # (temp, print headers)
-        response = EvaluatedResponse(fp.getheaders(), fp.read())
+        response = EvaluatedResponse(fp.headers, fp.read())
     except request.HTTPError as exception:
         fp = exception.fp  # see finally clause
         exc_info = sys.exc_info()
