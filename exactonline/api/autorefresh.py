@@ -37,7 +37,7 @@ class Autorefresh(object):
     If we still get a 401, we'll _also_ do a token refresh and hope that the
     disagreement between us and the server gets resolved.
     """
-    def rest(self, request):
+    def raw_rest(self, request):
         # Check how much time we have left, and refresh token 30 seconds before
         # it expires.
         have_fresh_token = False
@@ -48,7 +48,7 @@ class Autorefresh(object):
             have_fresh_token = True
 
         try:
-            decoded = super(Autorefresh, self).rest(request)
+            response = super(Autorefresh, self).raw_rest(request)
         except HTTPError as e:
             if e.code == 401 and not have_fresh_token:
                 # If we received a 401 even though we think our token is
@@ -58,9 +58,9 @@ class Autorefresh(object):
                 self.refresh_token()
 
                 # Retry the call but don't catch additional 401s.
-                decoded = super(Autorefresh, self).rest(request)
+                response = super(Autorefresh, self).raw_rest(request)
 
             else:
                 raise
 
-        return decoded
+        return response
