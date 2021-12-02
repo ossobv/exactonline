@@ -9,7 +9,7 @@ Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 import json
 import logging
 
-from time import time
+from time import sleep, time
 
 from .http import (
     Options, opt_secure, http_delete, http_get, http_post, http_put,
@@ -32,10 +32,61 @@ def _json_safe(data):
     return data
 
 
+class RateLimiter(object):
+    """
+    Keep track of ratelimits as imposed by ExactOnline.
+
+    If we ignore these, we'll run into a 429 Too Many Requests.
+    """
+    def __init__(self):
+        self._reset_times = {}
+
+    def clean(self):
+        now = int(time())
+        for key in list(self._reset_times.keys()):
+            if key < now:
+                del self._reset_times[key]
+
+    def update(self, until, limit, remaining):
+        until = int(until)
+        limit = int(limit)
+        remaining = int(remaining)
+        assert 1638448971000 < until < 9999999999999, until
+        assert limit >= 0, limit
+        assert remaining >= 0, remaining
+        until //= 1000  # store per second, not millisecond
+        # TODO: what if minutely and daily overlap?
+        self._reset_times[until] = (limit, remaining)
+
+    def wait(self):
+        self.clean()
+        now = int(time())
+        wait_until = None
+        amount_left = None
+        for key in self._reset_times:
+            if now < key:
+                if wait_until is None:
+                    wait_until = key
+                    amount_left = self._reset_times[key][1]
+                elif amount_left > self._reset_times[key][1]:
+                    wait_until = key
+                    amount_left = self._reset_times[key][1]
+
+        if wait_until is not None and amount_left < 1:
+            return (wait_until - now)
+
+        return 0
+
+    def __repr__(self):
+        return '<RateLimiter({}, {!r})>'.format(
+            int(time()), self._reset_times)
+
+
 class ExactRawApi(object):
     def __init__(self, storage, **kwargs):
         super(ExactRawApi, self).__init__(**kwargs)
         self.storage = storage
+        self.limiter = RateLimiter()
 
     def create_auth_request_url(self):
         # Build the URLs manually so we get consistent order.
@@ -72,7 +123,8 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_token_url()
-        response = _json_safe(http_post(url, token_data, opt=opt_secure))
+        response = _json_safe(http_post(
+            url, token_data, opt=opt_secure, limiter=self.limiter))
 
         # Validate and store the values.
         self._set_tokens(response)
@@ -101,7 +153,8 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_refresh_url()
-        response = _json_safe(http_post(url, refresh_data, opt=opt_secure))
+        response = _json_safe(http_post(
+            url, refresh_data, opt=opt_secure, limiter=self.limiter))
 
         # Validate and store the values.
         self._set_tokens(response)
@@ -145,6 +198,12 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, request):
+        wait = self.limiter.wait()
+        if wait:
+            print('(DEBUG: Sleeping for {} seconds because {!r})'.format(
+                wait, self.limiter))  # TODO: not to stdout..
+            sleep(wait)
+
         token = self.storage.get_access_token()
         opt_custom = Options()
         opt_custom.headers = {
@@ -157,14 +216,18 @@ class ExactRawApi(object):
 
         if request.method == 'DELETE':
             assert request.data is None
-            response = http_delete(request.resource, opt=opt)
+            response = http_delete(
+                request.resource, opt=opt, limiter=self.limiter)
         elif request.method == 'GET':
             assert request.data is None
-            response = http_get(request.resource, opt=opt)
+            response = http_get(
+                request.resource, opt=opt, limiter=self.limiter)
         elif request.method == 'POST':
-            response = http_post(request.resource, request.data, opt=opt)
+            response = http_post(
+                request.resource, request.data, opt=opt, limiter=self.limiter)
         elif request.method == 'PUT':
-            response = http_put(request.resource, request.data, opt=opt)
+            response = http_put(
+                request.resource, request.data, opt=opt, limiter=self.limiter)
         else:
             raise NotImplementedError(
                 'No REST handler for request.method %s' % (

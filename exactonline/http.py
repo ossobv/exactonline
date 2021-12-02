@@ -235,36 +235,38 @@ class ValidHTTPSHandler(request.HTTPSHandler):
         return self.do_open(class_, req)
 
 
-def http_delete(url, opt=opt_default):
+def http_delete(url, opt=opt_default, limiter=None):
     """
     Shortcut for urlopen (DELETE) + read. We'll probably want to add a
     nice timeout here later too.
     """
-    return _http_request(url, method='DELETE', opt=opt)
+    return _http_request(url, method='DELETE', opt=opt, limiter=limiter)
 
 
-def http_get(url, opt=opt_default):
+def http_get(url, opt=opt_default, limiter=None):
     """
     Shortcut for urlopen (GET) + read. We'll probably want to add a nice
     timeout here later too.
     """
-    return _http_request(url, method='GET', opt=opt)
+    return _http_request(url, method='GET', opt=opt, limiter=limiter)
 
 
-def http_post(url, data=None, opt=opt_default):
+def http_post(url, data=None, opt=opt_default, limiter=None):
     """
     Shortcut for urlopen (POST) + read. We'll probably want to add a
     nice timeout here later too.
     """
-    return _http_request(url, method='POST', data=_marshalled(data), opt=opt)
+    return _http_request(
+        url, method='POST', data=_marshalled(data), opt=opt, limiter=limiter)
 
 
-def http_put(url, data=None, opt=opt_default):
+def http_put(url, data=None, opt=opt_default, limiter=None):
     """
     Shortcut for urlopen (PUT) + read. We'll probably want to add a nice
     timeout here later too.
     """
-    return _http_request(url, method='PUT', data=_marshalled(data), opt=opt)
+    return _http_request(
+        url, method='PUT', data=_marshalled(data), opt=opt, limiter=limiter)
 
 
 def _marshalled(data):
@@ -279,7 +281,27 @@ def _marshalled(data):
     return data
 
 
-def _http_request(url, method=None, data=None, opt=None):
+def _update_ratelimiter_with_exactonline_headers(limiter, headers):
+    if limiter:
+        if headers.get('x-ratelimit-reset'):
+            limiter.update(
+                # X-RateLimit-Reset: 1638489600000
+                until=headers.get('x-ratelimit-reset'),
+                # X-RateLimit-Limit: 9000
+                limit=headers.get('x-ratelimit-limit'),
+                # X-RateLimit-Remaining: 8924
+                remaining=headers.get('x-ratelimit-remaining'))
+        if headers.get('x-ratelimit-minutely-reset'):
+            limiter.update(
+                # X-RateLimit-Minutely-Reset: 1638447360000
+                until=headers.get('x-ratelimit-minutely-reset'),
+                # X-RateLimit-Minutely-Limit: 100
+                limit=headers.get('x-ratelimit-minutely-limit'),
+                # X-RateLimit-Minutely-Remaining: 99
+                remaining=headers.get('x-ratelimit-minutely-remaining'))
+
+
+def _http_request(url, method=None, data=None, opt=None, limiter=None):
     # Check protocol.
     proto = url.split(':', 1)[0]
     if proto not in opt.protocols:
@@ -314,6 +336,14 @@ def _http_request(url, method=None, data=None, opt=None):
         stored_exception = exception
     finally:
         if fp:
+            # Store ratelimit values if available.
+            if limiter:
+                try:
+                    _update_ratelimiter_with_exactonline_headers(
+                        limiter, fp.headers)
+                except Exception:
+                    logger.exception('Unexpected headers in %r', fp.headers)
+
             # Try a bit harder to flush the connection and close it
             # properly. In case of errors, our django testserver peer
             # will show an error about us killing the connection
