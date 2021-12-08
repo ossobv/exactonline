@@ -37,9 +37,9 @@ def _wait_for_n_seconds(seconds, limiter):
         return
 
     if sys.stderr and os.isatty(sys.stderr.fileno()):
-        print(
-            '(sleeping for {} seconds because of ratelimits)'.format(seconds),
-            file=sys.stderr)
+        sys.stderr.write(
+            '(sleeping for {} seconds because of ratelimits {!r})\n'.format(
+                seconds, limiter))
 
     logger.info(
         'Sleeping for %d seconds because of ratelimits %r', seconds, limiter)

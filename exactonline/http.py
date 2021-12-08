@@ -59,8 +59,7 @@ urljoin  # touch it, we don't use it
 
 class BadProtocol(ValueError):
     """
-    Raised when you try to http_get or http_post with a disallowed
-    protocol.
+    Raised when you try to http_req with a disallowed protocol.
     """
     pass
 
@@ -235,43 +234,11 @@ class ValidHTTPSHandler(request.HTTPSHandler):
         return self.do_open(class_, req)
 
 
-def http_delete(url, opt=opt_default, limiter=None):
-    """
-    Shortcut for urlopen (DELETE) + read. We'll probably want to add a
-    nice timeout here later too.
-    """
-    return _http_request(url, method='DELETE', opt=opt, limiter=limiter)
-
-
-def http_get(url, opt=opt_default, limiter=None):
-    """
-    Shortcut for urlopen (GET) + read. We'll probably want to add a nice
-    timeout here later too.
-    """
-    return _http_request(url, method='GET', opt=opt, limiter=limiter)
-
-
-def http_post(url, data=None, opt=opt_default, limiter=None):
-    """
-    Shortcut for urlopen (POST) + read. We'll probably want to add a
-    nice timeout here later too.
-    """
-    return _http_request(
-        url, method='POST', data=_marshalled(data), opt=opt, limiter=limiter)
-
-
-def http_put(url, data=None, opt=opt_default, limiter=None):
-    """
-    Shortcut for urlopen (PUT) + read. We'll probably want to add a nice
-    timeout here later too.
-    """
-    return _http_request(
-        url, method='PUT', data=_marshalled(data), opt=opt, limiter=limiter)
-
-
 def http_req(method, url, data=None, opt=opt_default, limiter=None):
     """
-    Generic http_* with user supplied method.
+    Generic http request with user supplied method.
+
+    We'll probably want to add a nice timeout here later too.
     """
     if method in ('DELETE', 'GET'):
         assert data is None, (method, url, data)

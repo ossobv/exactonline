@@ -17,9 +17,7 @@ from unittest import TestCase, skipIf
 
 from .http import (
     BadProtocol, HTTPError, Options,
-    binquote,
-    http_get, http_post, http_put, http_delete,
-    opt_secure__unmodified as opt_secure)
+    binquote, http_req, opt_secure__unmodified as opt_secure)
 
 try:
     from urllib import request
@@ -134,25 +132,26 @@ class HttpTestCase(TestCase):
     def test_testserver(self):
         # Ensure that the testserver refuses if the method is bad.
         server = self.get_oneshot_server('FAIL', '555', 'failure')
-        self.assertRaises(HTTPError, http_get,
-                          'http://localhost:%d/path' % (server.port,))
+        self.assertRaises(
+            HTTPError, http_req,
+            'GET', 'http://localhost:%d/path' % (server.port,))
         server.join()
 
     def test_delete(self):
         server = self.get_oneshot_server('DELETE', '200', 'whatever1')
-        data = http_delete('http://localhost:%d/path' % (server.port,))
+        data = http_req('DELETE', 'http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever1')
 
     def test_get(self):
         server = self.get_oneshot_server('GET', '200', 'whatever2')
-        data = http_get('http://localhost:%d/path' % (server.port,))
+        data = http_req('GET', 'http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever2')
 
     def test_post(self):
         server = self.get_oneshot_server('POST', '200', 'whatever3')
-        data = http_post('http://localhost:%d/path' % (server.port,))
+        data = http_req('POST', 'http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever3')
 
@@ -160,8 +159,8 @@ class HttpTestCase(TestCase):
         server = self.get_oneshot_server(
             'POST', '200', body=None)  # no body => echo
         indata = 'abc DEF\nghi JKL\n'
-        data = http_post(
-            'http://localhost:%d/path' % (server.port,), data=indata)
+        data = http_req(
+            'POST', 'http://localhost:%d/path' % (server.port,), data=indata)
         server.join()
 
         data = data.decode('utf-8')
@@ -170,14 +169,14 @@ class HttpTestCase(TestCase):
 
     def test_put(self):
         server = self.get_oneshot_server('PUT', '200', 'whatever4')
-        data = http_put('http://localhost:%d/path' % (server.port,))
+        data = http_req('PUT', 'http://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'whatever4')
 
     def test_502(self):
         server = self.get_oneshot_server('GET', '502', 'eRrOr')
         try:
-            http_get('http://localhost:%d/path' % (server.port,))
+            http_req('GET', 'http://localhost:%d/path' % (server.port,))
         except HTTPError as e:
             self.assertTrue(isinstance(e, request.HTTPError))
             self.assertEqual(e.code, 502)
@@ -190,7 +189,7 @@ class HttpTestCase(TestCase):
         server = self.get_oneshot_server('POST', '503', '{"errno":1}')
         url = 'http://localhost:%d/path' % (server.port,)
         try:
-            http_post(url, data='{"action":1}')
+            http_req('POST', url, data='{"action":1}')
         except HTTPError as e:
             self.assertTrue(isinstance(e, request.HTTPError))
             error_str = str(e)
@@ -203,17 +202,19 @@ class HttpTestCase(TestCase):
         server.join()
 
     def test_https_only_through_options(self):
-        self.assertRaises(BadProtocol, http_get,
-                          'http://localhost/path', opt=opt_secure)
-        self.assertRaises(BadProtocol, http_get,
-                          'ftp://localhost/path', opt=opt_secure)
+        self.assertRaises(
+            BadProtocol, http_req,
+            'GET', 'http://localhost/path', opt=opt_secure)
+        self.assertRaises(
+            BadProtocol, http_req,
+            'GET', 'ftp://localhost/path', opt=opt_secure)
 
     @skipIf(sys.version_info >= (2, 7, 9),
             'PEP-0476: Since Python 2.7.9, certificate verification is always '
             'enabled.')
     def test_https_no_secure(self):
         server = self.get_oneshot_server('GET', '200', 'ssl', use_ssl=True)
-        data = http_get('https://localhost:%d/path' % (server.port,))
+        data = http_req('GET', 'https://localhost:%d/path' % (server.port,))
         server.join()
         self.assertDataEqual(data, 'ssl')
 
@@ -221,16 +222,17 @@ class HttpTestCase(TestCase):
             'Calls external services. Do not run automatically.')
     def test_https_with_real_secure(self):
         # This should work with a proper certificate.
-        data = http_get('https://api.github.com/', opt=opt_secure)
+        data = http_req('GET', 'https://api.github.com/', opt=opt_secure)
         self.assertEqual(HttpTestCase.to_str(data)[0:1], '{')  # json :)
 
     def test_https_with_self_signed(self):
         # This should fail, because the testserver uses a self-signed
         # certificate.
         server = self.get_oneshot_server('GET', '200', 'ssl', use_ssl=True)
-        self.assertRaises(request.URLError, http_get,
-                          'https://localhost:%d/path' % (server.port,),
-                          opt=opt_secure)
+        self.assertRaises(
+            request.URLError, http_req,
+            'GET', 'https://localhost:%d/path' % (server.port,),
+            opt=opt_secure)
         server.join()
 
     def test_https_with_allowed_self_signed(self):
@@ -239,8 +241,8 @@ class HttpTestCase(TestCase):
             path.dirname(__file__), 'http_testserver.crt')
         my_opt = opt_secure | my_opt
         server = self.get_oneshot_server('GET', '200', 'ssl2', use_ssl=True)
-        data = http_get('https://localhost:%d/path' % (server.port,),
-                        opt=my_opt)
+        data = http_req(
+            'GET', 'https://localhost:%d/path' % (server.port,), opt=my_opt)
         server.join()
         self.assertDataEqual(data, 'ssl2')
 
@@ -253,8 +255,9 @@ class HttpTestCase(TestCase):
         my_opt.cacert_file = path.join(
             path.dirname(__file__), 'http_testserver.crt')
         my_opt = opt_secure | my_opt
-        self.assertRaises(request.URLError, http_get,
-                          'https://api.github.com/', opt=my_opt)
+        self.assertRaises(
+            request.URLError, http_req,
+            'GET', 'https://api.github.com/', opt=my_opt)
 
     # ; Python23 compatibility helpers
 
