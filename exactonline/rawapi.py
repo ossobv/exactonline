@@ -8,12 +8,12 @@ Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 """
 import json
 import logging
+import os
+import sys
 
 from time import sleep, time
 
-from .http import (
-    Options, opt_secure, http_delete, http_get, http_post, http_put,
-    binquote, urljoin)
+from .http import HTTPError, Options, opt_secure, http_req, binquote, urljoin
 
 
 logger = logging.getLogger(__name__)
@@ -32,11 +32,28 @@ def _json_safe(data):
     return data
 
 
+def _wait_for_n_seconds(seconds, limiter):
+    if not seconds:
+        return
+
+    if sys.stderr and os.isatty(sys.stderr.fileno()):
+        print(
+            '(sleeping for {} seconds because of ratelimits)'.format(seconds),
+            file=sys.stderr)
+
+    logger.info(
+        'Sleeping for %d seconds because of ratelimits %r', seconds, limiter)
+    sleep(seconds)
+
+
 class RateLimiter(object):
     """
     Keep track of ratelimits as imposed by ExactOnline.
 
     If we ignore these, we'll run into a 429 Too Many Requests.
+
+    NOTE: ExactOnline keeps a timer _per_ division. But this limiter updates
+    automatically, so that is not much of a problem.
     """
     def __init__(self):
         self._reset_times = {}
@@ -55,12 +72,15 @@ class RateLimiter(object):
         assert limit >= 0, limit
         assert remaining >= 0, remaining
         until //= 1000  # store per second, not millisecond
-        # TODO: what if minutely and daily overlap?
+        # minutely and daily might overlap. Should not be an issue if we
+        # update() the shortest value last (first Daily, then Minutely).
         self._reset_times[until] = (limit, remaining)
 
-    def wait(self):
+    def should_wait(self):
         self.clean()
-        now = int(time())
+        # 0.5s offset, copes with slight clock drift AND ensures we get a
+        # non-zero wait right after a 429.
+        now = int(time() - 0.5)
         wait_until = None
         amount_left = None
         for key in self._reset_times:
@@ -73,7 +93,7 @@ class RateLimiter(object):
                     amount_left = self._reset_times[key][1]
 
         if wait_until is not None and amount_left < 1:
-            return (wait_until - now)
+            return max((wait_until - now), 0)
 
         return 0
 
@@ -123,8 +143,8 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_token_url()
-        response = _json_safe(http_post(
-            url, token_data, opt=opt_secure, limiter=self.limiter))
+        response = _json_safe(http_req(
+            'POST', url, token_data, opt=opt_secure, limiter=self.limiter))
 
         # Validate and store the values.
         self._set_tokens(response)
@@ -153,8 +173,8 @@ class ExactRawApi(object):
 
         # Fire away!
         url = self.storage.get_refresh_url()
-        response = _json_safe(http_post(
-            url, refresh_data, opt=opt_secure, limiter=self.limiter))
+        response = _json_safe(http_req(
+            'POST', url, refresh_data, opt=opt_secure, limiter=self.limiter))
 
         # Validate and store the values.
         self._set_tokens(response)
@@ -177,6 +197,7 @@ class ExactRawApi(object):
             data = json.dumps(request.data)
 
         new_request = request.update(resource=url, data=data)
+
         response = self._rest_query(new_request)
 
         if request.method in ('DELETE', 'PUT'):
@@ -198,11 +219,7 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, request):
-        wait = self.limiter.wait()
-        if wait:
-            print('(DEBUG: Sleeping for {} seconds because {!r})'.format(
-                wait, self.limiter))  # TODO: not to stdout..
-            sleep(wait)
+        _wait_for_n_seconds(self.limiter.should_wait(), self.limiter)
 
         token = self.storage.get_access_token()
         opt_custom = Options()
@@ -214,24 +231,22 @@ class ExactRawApi(object):
             opt_custom.headers.update({'Content-Type': 'application/json'})
         opt = (opt_secure | opt_custom)
 
-        if request.method == 'DELETE':
-            assert request.data is None
-            response = http_delete(
-                request.resource, opt=opt, limiter=self.limiter)
-        elif request.method == 'GET':
-            assert request.data is None
-            response = http_get(
-                request.resource, opt=opt, limiter=self.limiter)
-        elif request.method == 'POST':
-            response = http_post(
-                request.resource, request.data, opt=opt, limiter=self.limiter)
-        elif request.method == 'PUT':
-            response = http_put(
-                request.resource, request.data, opt=opt, limiter=self.limiter)
-        else:
-            raise NotImplementedError(
-                'No REST handler for request.method %s' % (
-                    request.method,))
+        try:
+            response = http_req(
+                request.method, request.resource, data=request.data,
+                opt=opt, limiter=self.limiter)
+        except HTTPError as e:
+            seconds = self.limiter.should_wait()
+            if e.getcode() == 429 and seconds > 0:  # "Too Many Requests"
+                # It was a 429. Let's wait for the desired time and retry
+                # the request once.
+                _wait_for_n_seconds(seconds, self.limiter)
+
+                response = http_req(
+                    request.method, request.resource, data=request.data,
+                    opt=opt, limiter=self.limiter)
+            else:
+                raise
 
         return _json_safe(response)
 

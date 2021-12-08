@@ -269,6 +269,22 @@ def http_put(url, data=None, opt=opt_default, limiter=None):
         url, method='PUT', data=_marshalled(data), opt=opt, limiter=limiter)
 
 
+def http_req(method, url, data=None, opt=opt_default, limiter=None):
+    """
+    Generic http_* with user supplied method.
+    """
+    if method in ('DELETE', 'GET'):
+        assert data is None, (method, url, data)
+    elif method in ('POST', 'PUT'):
+        pass
+    else:
+        raise NotImplementedError(
+            'No REST handler for method %s' % (method,))
+
+    return _http_request(
+        url, method=method, data=_marshalled(data), opt=opt, limiter=limiter)
+
+
 def _marshalled(data):
     if not data:
         data = ''.encode('utf-8')  # ensure PUT/POST-mode
@@ -283,6 +299,8 @@ def _marshalled(data):
 
 def _update_ratelimiter_with_exactonline_headers(limiter, headers):
     if limiter:
+        # First Daily, then Minutely. If both keys are the same, the shortest
+        # should win. And the minute timer is likely the shortest.
         if headers.get('x-ratelimit-reset'):
             limiter.update(
                 # X-RateLimit-Reset: 1638489600000
