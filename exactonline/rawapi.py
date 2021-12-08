@@ -32,25 +32,17 @@ def _json_safe(data):
     return data
 
 
-def _wait_for_n_seconds(seconds, limiter):
-    if not seconds:
-        return
-
-    if sys.stderr and os.isatty(sys.stderr.fileno()):
-        sys.stderr.write(
-            '(sleeping for {} seconds because of ratelimits {!r})\n'.format(
-                seconds, limiter))
-
-    logger.info(
-        'Sleeping for %d seconds because of ratelimits %r', seconds, limiter)
-    sleep(seconds)
-
-
 class RateLimiter(object):
     """
     Keep track of ratelimits as imposed by ExactOnline.
 
     If we ignore these, we'll run into a 429 Too Many Requests.
+
+    The ExactRawApi class calls .backoff() to (a) wait and (b) check
+    whether waiting was necessary.
+
+    The http_req method calls .update() to update the current rate limit
+    values as provided by the API server.
 
     NOTE: ExactOnline keeps a timer _per_ division. But this limiter updates
     automatically, so that is not much of a problem.
@@ -58,11 +50,32 @@ class RateLimiter(object):
     def __init__(self):
         self._reset_times = {}
 
-    def clean(self):
-        now = int(time())
-        for key in list(self._reset_times.keys()):
-            if key < now:
-                del self._reset_times[key]
+    def backoff(self):
+        """
+        Check if we need to wait, and wait. Returns True if we did any waiting.
+        """
+        seconds = self._should_wait()
+        if seconds > 0:
+            self.wait(seconds)
+            return True
+        return False
+
+    def wait(self, seconds):
+        """
+        Handle the actual waiting and print a notice to the user.
+        """
+        assert seconds > 0, seconds
+
+        if sys.stderr and os.isatty(sys.stderr.fileno()):
+            sys.stderr.write(
+                '(sleeping for {} seconds because of ratelimits {!r})\n'
+                .format(seconds, self))
+
+        logger.info(
+            'Sleeping for %d seconds because of ratelimits %r',
+            seconds, self)
+
+        sleep(seconds)
 
     def update(self, until, limit, remaining):
         until = int(until)
@@ -76,8 +89,14 @@ class RateLimiter(object):
         # update() the shortest value last (first Daily, then Minutely).
         self._reset_times[until] = (limit, remaining)
 
-    def should_wait(self):
-        self.clean()
+    def _clean(self):
+        now = int(time())
+        for key in list(self._reset_times.keys()):
+            if key < now:
+                del self._reset_times[key]
+
+    def _should_wait(self):
+        self._clean()
         # 0.5s offset, copes with slight clock drift AND ensures we get a
         # non-zero wait right after a 429.
         now = int(time() - 0.5)
@@ -106,7 +125,16 @@ class ExactRawApi(object):
     def __init__(self, storage, **kwargs):
         super(ExactRawApi, self).__init__(**kwargs)
         self.storage = storage
-        self.limiter = RateLimiter()
+        self.limiter = self.get_ratelimiter()
+
+    def get_ratelimiter(self):
+        """
+        Create a RateLimiter instance. Override this if you want non-default
+        rate limiting behaviour.
+
+        TODO: Consider moving the default RateLimiter to a separate Mixin?
+        """
+        return RateLimiter()
 
     def create_auth_request_url(self):
         # Build the URLs manually so we get consistent order.
@@ -219,7 +247,7 @@ class ExactRawApi(object):
         return decoded
 
     def _rest_query(self, request):
-        _wait_for_n_seconds(self.limiter.should_wait(), self.limiter)
+        self.limiter.backoff()
 
         token = self.storage.get_access_token()
         opt_custom = Options()
@@ -236,12 +264,7 @@ class ExactRawApi(object):
                 request.method, request.resource, data=request.data,
                 opt=opt, limiter=self.limiter)
         except HTTPError as e:
-            seconds = self.limiter.should_wait()
-            if e.getcode() == 429 and seconds > 0:  # "Too Many Requests"
-                # It was a 429. Let's wait for the desired time and retry
-                # the request once.
-                _wait_for_n_seconds(seconds, self.limiter)
-
+            if e.getcode() == 429 and self.limiter.backoff():
                 response = http_req(
                     request.method, request.resource, data=request.data,
                     opt=opt, limiter=self.limiter)
