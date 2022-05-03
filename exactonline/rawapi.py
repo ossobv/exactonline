@@ -66,7 +66,7 @@ class RateLimiter(object):
         """
         assert seconds > 0, seconds
 
-        if sys.stderr and os.isatty(sys.stderr.fileno()):
+        if sys.stderr and sys.stderr.isatty():
             sys.stderr.write(
                 '(sleeping for {} seconds because of ratelimits {!r})\n'
                 .format(seconds, self))
