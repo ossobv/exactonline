@@ -1,9 +1,13 @@
 Changes
 -------
 
-* v0.3.6+dev:
+* v0.4.0:
 
-  - FIXME
+  - Added ratelimiter, requested and tested by various people.
+
+  - Added debug logs, by Martijn Hemeryck (@mhemeryck).
+
+  - Cleanup. Also by Eike Dehling (@EikeDehling).
 
 * v0.3.6:
 
