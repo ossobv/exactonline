@@ -8,7 +8,6 @@ Copyright (C) 2015-2021 Walter Doekes, OSSO B.V.
 """
 import json
 import logging
-import os
 import sys
 
 from time import sleep, time
