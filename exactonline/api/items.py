@@ -14,9 +14,15 @@ class Items(Manager):
     resource = 'logistics/items'
 
     def filter(self, code=None, **kwargs):
+        if 'select' not in kwargs:
+            kwargs['select'] = 'ID,Code,Name'
+
         if code is not None:
-            remote_id = self._remote_guid(code)
-            # Filter by our account number.
+            remote_id = self._remote_code(code)
+            # Filter by our item code.
             self._filter_append(kwargs, u'Code eq %s' % (remote_id,))
 
         return super(Items, self).filter(**kwargs)
+
+    def _remote_code(self, code):
+        return u"'%18s'" % (code.replace("'", "''"),)
