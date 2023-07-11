@@ -11,7 +11,7 @@ from .manager import Manager
 
 class Items(Manager):
     # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=LogisticsItems
-    resource = 'logistics/items'
+    resource = 'logistics/Items'
 
     def filter(self, code=None, **kwargs):
         if 'select' not in kwargs:
