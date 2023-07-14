@@ -13,12 +13,18 @@ class Items(Manager):
     # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=LogisticsItems
     resource = 'logistics/Items'
 
-    def filter(self, item_id=None, **kwargs):
+    def filter(self, code=None, modified_since_date=None, **kwargs):
+        if code and modified_since_date:
+            raise ValueError("You can only filter on either code, or modified_since_date")
+
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,Code,Name'
+            kwargs['select'] = 'ID,Code,FirstName,MiddleName,LastName'
 
-        if item_id is not None:
-            remote_id = self._remote_guid(item_id)
-            self._filter_append(kwargs, u'ID eq %s' % (remote_id,))
+        if code is not None:
+            self._filter_append(kwargs, f"Code eq '{code}'")
 
-        return super(Items, self).filter(**kwargs)
+        if modified_since_date:
+            datestring = modified_since_date.strftime('%Y-%m-%d')
+            self._filter_append(kwargs, f"Modified gt datetime'{datestring}'")
+
+        return super().filter(**kwargs)
