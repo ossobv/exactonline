@@ -15,6 +15,6 @@ class SupplierItems(Manager):
 
     def filter(self, **kwargs):
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,ItemCode,Supplier,SupplierDescription,CountryOfOrigin'
+            kwargs['select'] = 'ID,ItemCode,Supplier,SupplierDescription,CountryOfOrigin,PurchasePrice'
 
         return super().filter(**kwargs)

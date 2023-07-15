@@ -18,7 +18,7 @@ class Items(Manager):
             raise ValueError("You can only filter on either code, or modified_since_date")
 
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,Code,FirstName,MiddleName,LastName'
+            kwargs['select'] = ','.join(['ID', 'Code', 'CostPriceStandard', 'Description'])
 
         if code is not None:
             self._filter_append(kwargs, f"Code eq '{code}'")
