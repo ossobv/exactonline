@@ -10,15 +10,17 @@ from .manager import Manager
 
 
 class Items(Manager):
-    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=LogisticsItems
+    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?
+    #   name=LogisticsItems
     resource = 'logistics/Items'
 
     def filter(self, code=None, modified_since_date=None, **kwargs):
         if code and modified_since_date:
-            raise ValueError("You can only filter on either code, or modified_since_date")
+            raise ValueError(
+                'You can only filter on either code, or modified_since_date')
 
         if 'select' not in kwargs:
-            kwargs['select'] = ','.join(['ID', 'Code', 'CostPriceStandard', 'Description'])
+            kwargs['select'] = 'ID,Code,CostPriceStandard,Description'
 
         if code is not None:
             self._filter_append(kwargs, f"Code eq '{code}'")

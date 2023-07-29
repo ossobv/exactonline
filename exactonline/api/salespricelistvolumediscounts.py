@@ -11,13 +11,16 @@ from .manager import Manager
 
 class SalesPriceListVolumeDiscounts(Manager):
     resource = 'sales/SalesPriceListVolumeDiscounts'
-    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=SalesSalesPriceListVolumeDiscounts
+    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?
+    #   name=SalesSalesPriceListVolumeDiscounts
 
     def filter(self, pricelistperiod_id=None, **kwargs):
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,BasePriceAmount,Item,ItemCode,Discount,NewPrice,Quantity'
+            kwargs['select'] = (
+                'ID,BasePriceAmount,Item,ItemCode,Discount,NewPrice,Quantity')
 
         if pricelistperiod_id:
-            self._filter_append(kwargs, f"PriceListPeriod eq guid'{pricelistperiod_id}'")
+            self._filter_append(
+                kwargs, f"PriceListPeriod eq guid'{pricelistperiod_id}'")
 
         return super().filter(**kwargs)

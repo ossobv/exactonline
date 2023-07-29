@@ -10,11 +10,14 @@ from .manager import Manager
 
 
 class SupplierItems(Manager):
-    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=LogisticsSupplierItem
+    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?
+    #   name=LogisticsSupplierItem
     resource = 'logistics/SupplierItem'
 
     def filter(self, **kwargs):
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,ItemCode,Supplier,SupplierDescription,CountryOfOrigin,PurchasePrice'
+            kwargs['select'] = (
+                'ID,ItemCode,Supplier,SupplierDescription,'
+                'CountryOfOrigin,PurchasePrice')
 
         return super().filter(**kwargs)

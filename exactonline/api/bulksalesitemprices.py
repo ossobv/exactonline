@@ -11,11 +11,13 @@ from .manager import Manager
 
 class BulkSalesItemPrices(Manager):
     resource = 'bulk/Logistics/SalesItemPrices'
-    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=BulkLogisticsSalesItemPrices
+    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?
+    #   name=BulkLogisticsSalesItemPrices
 
     def filter(self, item_id=None, **kwargs):
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,Account,AccountName,Item,ItemCode,Price,Currency'
+            kwargs['select'] = (
+                'ID,Account,AccountName,Item,ItemCode,Price,Currency')
 
         if item_id:
             self._filter_append(kwargs, f"Item eq {item_id}")

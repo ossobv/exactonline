@@ -11,11 +11,13 @@ from .manager import Manager
 
 class SyncSalesItemPrices(Manager):
     resource = 'sync/Logistics/SalesItemPrices'
-    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?name=SyncLogisticsSalesItemPrices
+    # https://start.exactonline.co.uk/docs/HlpRestAPIResourcesDetails.aspx?
+    #   name=SyncLogisticsSalesItemPrices
 
     def filter(self, timestamp_gt, **kwargs):
         if 'select' not in kwargs:
-            kwargs['select'] = 'ID,Account,AccountName,Item,ItemCode,Price,Currency'
+            kwargs['select'] = (
+                'ID,Account,AccountName,Item,ItemCode,Price,Currency')
 
         self._filter_append(kwargs, f"Timestamp gt {timestamp_gt}")
 
