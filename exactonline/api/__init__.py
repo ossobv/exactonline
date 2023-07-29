@@ -14,12 +14,19 @@ from .unwrap import Unwrap
 from .v1division import V1Division
 
 from .bankaccounts import BankAccounts
+from .bulksalesitemprices import BulkSalesItemPrices
 from .contacts import Contacts
 from .invoices import Invoices
+from .items import Items
 from .ledgeraccounts import LedgerAccounts
 from .quotations import Quotations
 from .receivables import Receivables
 from .relations import Relations
+from .salespricelistperiods import SalesPriceListPeriods
+from .salespricelists import SalesPriceLists
+from .salespricelistvolumediscounts import SalesPriceListVolumeDiscounts
+from .supplieritems import SupplierItems
+from .syncsalesitemprices import SyncSalesItemPrices
 from .vatcodes import VatCodes
 
 
@@ -35,10 +42,17 @@ class ExactApi(
     ExactRawApi
 ):
     bankaccounts = BankAccounts.as_property()
+    bulksalesitemprices = BulkSalesItemPrices.as_property()
     contacts = Contacts.as_property()
     invoices = Invoices.as_property()
+    items = Items.as_property()
     ledgeraccounts = LedgerAccounts.as_property()
     quotations = Quotations.as_property()
     receivables = Receivables.as_property()
     relations = Relations.as_property()
+    salespricelists = SalesPriceLists.as_property()
+    salespricelistvolumediscounts = SalesPriceListVolumeDiscounts.as_property()
+    salespricelistperiods = SalesPriceListPeriods.as_property()
+    supplieritems = SupplierItems.as_property()
+    syncsalesitemprices = SyncSalesItemPrices.as_property()
     vatcodes = VatCodes.as_property()

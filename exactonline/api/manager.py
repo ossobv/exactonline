@@ -69,7 +69,7 @@ class Manager(object):
         return ret[0]
 
     def filter(self, **kwargs):
-        # kwargs = {'filter': "EntryDate+gt+datetime'2014-01-01'", 'top': 5}
+        # kwargs = {'filter': "Created+gt+datetime'2014-01-01'", 'top': 5}
         args = []
         for key, value in kwargs.items():
             args.append('$%s=%s' % (
