@@ -3,9 +3,6 @@
 
 *Exact Online REST API Library in Python*
 
-.. image:: https://bettercodehub.com/edge/badge/ossobv/exactonline
-        :alt: BetterCodeHub rating
-
 .. image:: https://api.travis-ci.com/ossobv/exactonline.svg
         :alt: Continuous Integration Status
 
