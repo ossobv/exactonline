@@ -12,4 +12,3 @@ from .manager import Manager
 class SalesPriceLists(Manager):
     resource = 'sales/SalesPriceLists'
     # https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=SalesSalesPriceLists
-
