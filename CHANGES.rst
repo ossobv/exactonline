@@ -1,5 +1,13 @@
 Changes
 -------
+* v0.4.1:
+
+  - Added bulksalesitemprices
+  - Added salespricelistperiods
+  - Added salespricelists
+  - Added salespricelistvolumediscounts
+  - Added supplieritems
+  - Added syncsalesitemprices
 
 * v0.4.0+dev:
 
