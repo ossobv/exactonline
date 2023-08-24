@@ -17,7 +17,7 @@ class V1DivisionError(ExactOnlineError):
 
 
 class V1Division(object):
-    def restv1(self, request):
+    def restv1(self, request, beta=False, bulk=False):
         try:
             division = self.storage.get_division()
         except MissingSetting:
@@ -26,6 +26,12 @@ class V1Division(object):
             raise V1DivisionError('Division unset/blank in config')
 
         urlbase = 'v1/%d/' % (division,)
+
+        if beta is True:
+            urlbase = 'v1/beta/%d/' % (division,)
+        if bulk is True:
+            urlbase = 'v1/%d/bulk/' % (division,)
+
         request = request.update(resource=urljoin(urlbase, request.resource))
         return self.rest(request)
 
